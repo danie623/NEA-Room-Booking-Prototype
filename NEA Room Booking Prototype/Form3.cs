@@ -19,12 +19,15 @@ namespace NEA_Room_Booking_Prototype
 
 		string currentUser;
 		List<String> bookingIDs;
+		String selectedBookingID;
 
-		public View_Bookings()
+        public View_Bookings()
 		{
 			InitializeComponent();
 			sqlConnection2 = new SqlConnection(CONNECT);
-		}
+            selectedBookingID = null;
+            showBookingButtons(false);
+        }
 
 
 		
@@ -33,11 +36,12 @@ namespace NEA_Room_Booking_Prototype
 			 
 		}
 		
-		public void get_Teacher(string teacher)
+		public void Get_Teacher(string teacher)
 		{
 			currentUser = teacher;
-		}
-		private void get_Bookings(string teacher)
+			Get_Bookings(currentUser);
+        }
+		private void Get_Bookings(string teacher)
 		{
 			bookingIDs = new List<String>();
 			DateTime dateOfBooking;
@@ -55,17 +59,83 @@ namespace NEA_Room_Booking_Prototype
 			{
 				while (reader.Read())
 				{
+					//display bookings in listbox
 					bookingIDs.Add($"{reader["bookingID"]}");
 					dateOfBooking = (DateTime) reader["DateOfBooking"];
 					BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0,10)} period: {reader["BookedPeriod"]}");
 				}
 			}
 
-			//display bookings in listbox
+			
 			if (sqlConnection2.State == ConnectionState.Open)
 			{
 				sqlConnection2.Close();
 			}
-		} 
-	}
+		}
+
+        private void Back_Click(object sender, EventArgs e)
+        {
+			this.DialogResult = DialogResult.Cancel;
+			this.Close();
+        }
+
+		private void showBookingButtons(bool show)
+		{
+			if (show)
+			{
+				Cancel_Booking.Enabled = true;
+				Cancel_Booking.Visible = true;
+				Transfer_Booking.Enabled = true;
+				Transfer_Booking.Visible = true;
+            }
+			else
+			{
+				Cancel_Booking.Enabled = false;
+				Cancel_Booking.Visible = false;
+				Transfer_Booking.Enabled = false;
+				Transfer_Booking.Visible = false;
+            }
+        }
+
+        private void BookingsList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+			if (BookingsList.SelectedIndex != -1)
+			{
+				selectedBookingID = bookingIDs[BookingsList.SelectedIndex];
+				showBookingButtons(true);
+            }
+			else
+			{
+				selectedBookingID = null;
+                showBookingButtons(false);
+            }
+        }
+
+        private void Cancel_Booking_Click(object sender, EventArgs e)
+        {
+			if (sqlConnection2.State != ConnectionState.Open)
+			{
+				sqlConnection2.Open();
+            }
+
+            SqlCommand command = new SqlCommand("DELETE FROM Bookings WHERE bookingID = @bookingID;", sqlConnection2);
+			command.Parameters.AddWithValue("@bookingID", selectedBookingID);
+
+			if (command.ExecuteNonQuery() > 0)
+			{
+				MessageBox.Show("Booking cancelled successfully.");
+				BookingsList.Items.Clear();
+				Get_Bookings(currentUser);
+			}
+			else
+			{
+				MessageBox.Show("Error cancelling booking. Please try again.");
+			}
+            
+			if (sqlConnection2.State == ConnectionState.Open)
+			{
+				sqlConnection2.Close();
+            }
+        }
+    }
 }
