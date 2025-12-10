@@ -86,6 +86,7 @@
             this.PeriodSelect.Size = new System.Drawing.Size(35, 33);
             this.PeriodSelect.Sorted = true;
             this.PeriodSelect.TabIndex = 2;
+            this.PeriodSelect.SelectedIndexChanged += new System.EventHandler(this.PeriodSelect_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -178,6 +179,7 @@
             this.DateBox.Name = "DateBox";
             this.DateBox.Size = new System.Drawing.Size(229, 28);
             this.DateBox.TabIndex = 21;
+            this.DateBox.SelectedIndexChanged += new System.EventHandler(this.DateBox_SelectedIndexChanged);
             // 
             // label2
             // 

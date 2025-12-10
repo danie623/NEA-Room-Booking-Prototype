@@ -111,11 +111,6 @@ namespace NEA_Room_Booking_Prototype
 
 		}
 
-		private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
-		{
-
-		}
-
 		// Login/Logout button
 		private void Login_Click(object sender, EventArgs e)
 		{
@@ -301,7 +296,6 @@ namespace NEA_Room_Booking_Prototype
 		}
 
 
-
 		// Book room button
 		private void Book_Room_Button_Click(object sender, EventArgs e)
 		{
@@ -369,13 +363,16 @@ namespace NEA_Room_Booking_Prototype
 			View_Bookings popup = new View_Bookings();
 			popup.Get_Teacher(currentUser);
 			popup.Show();
-		} 
+		}
 
 
 
 
-		// Enter key functionality for login
-		private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
+
+
+        // refreshes etc.
+        #region key and button pushes
+        private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.KeyCode == Keys.Enter) { Login.PerformClick(); }
 		}
@@ -384,6 +381,21 @@ namespace NEA_Room_Booking_Prototype
 		{
 			if (e.KeyCode == Keys.Enter) { Login.PerformClick(); }
 		}
-	}
+
+        private void PeriodSelect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+			GetRooms.PerformClick();
+        }
+
+        private void DateBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GetRooms.PerformClick();
+        }
+        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GetRooms.PerformClick();
+        }
+        #endregion
+    }
 }
 
