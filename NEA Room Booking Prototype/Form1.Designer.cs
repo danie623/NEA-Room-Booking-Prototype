@@ -203,6 +203,7 @@
             // 
             // Book_Room_Button
             // 
+            this.Book_Room_Button.Enabled = false;
             this.Book_Room_Button.Location = new System.Drawing.Point(719, 51);
             this.Book_Room_Button.Margin = new System.Windows.Forms.Padding(2);
             this.Book_Room_Button.Name = "Book_Room_Button";
@@ -210,6 +211,7 @@
             this.Book_Room_Button.TabIndex = 24;
             this.Book_Room_Button.Text = "Book Room";
             this.Book_Room_Button.UseVisualStyleBackColor = true;
+            this.Book_Room_Button.Visible = false;
             this.Book_Room_Button.Click += new System.EventHandler(this.Book_Room_Button_Click);
             // 
             // ShowAlreadyBookedRooms
@@ -225,30 +227,37 @@
             // 
             // ViewBookings
             // 
+            this.ViewBookings.Enabled = false;
             this.ViewBookings.Location = new System.Drawing.Point(1059, 591);
             this.ViewBookings.Name = "ViewBookings";
             this.ViewBookings.Size = new System.Drawing.Size(197, 63);
             this.ViewBookings.TabIndex = 26;
             this.ViewBookings.Text = "My Bookings";
             this.ViewBookings.UseVisualStyleBackColor = true;
+            this.ViewBookings.Visible = false;
             this.ViewBookings.Click += new System.EventHandler(this.ViewBookings_Click);
             // 
             // teacherBookingFor
             // 
+            this.teacherBookingFor.Enabled = false;
             this.teacherBookingFor.FormattingEnabled = true;
             this.teacherBookingFor.Location = new System.Drawing.Point(12, 343);
+            this.teacherBookingFor.MaxDropDownItems = 10;
             this.teacherBookingFor.Name = "teacherBookingFor";
             this.teacherBookingFor.Size = new System.Drawing.Size(157, 21);
             this.teacherBookingFor.TabIndex = 27;
+            this.teacherBookingFor.Visible = false;
             // 
             // BookingForLabel
             // 
             this.BookingForLabel.AutoSize = true;
+            this.BookingForLabel.Enabled = false;
             this.BookingForLabel.Location = new System.Drawing.Point(17, 327);
             this.BookingForLabel.Name = "BookingForLabel";
             this.BookingForLabel.Size = new System.Drawing.Size(86, 13);
             this.BookingForLabel.TabIndex = 28;
             this.BookingForLabel.Text = "I am booking for:";
+            this.BookingForLabel.Visible = false;
             // 
             // BookingScreen
             // 

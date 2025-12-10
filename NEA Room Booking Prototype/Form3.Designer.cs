@@ -32,8 +32,7 @@
             this.Back = new System.Windows.Forms.Button();
             this.Cancel_Booking = new System.Windows.Forms.Button();
             this.Transfer_Booking = new System.Windows.Forms.Button();
-            this.Past_Bookings = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.Bookings_For_others_check = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // BookingsList
@@ -75,25 +74,16 @@
             this.Transfer_Booking.Text = "Transfer Booking";
             this.Transfer_Booking.UseVisualStyleBackColor = true;
             // 
-            // Past_Bookings
+            // Bookings_For_others_check
             // 
-            this.Past_Bookings.AutoSize = true;
-            this.Past_Bookings.Location = new System.Drawing.Point(17, 21);
-            this.Past_Bookings.Name = "Past_Bookings";
-            this.Past_Bookings.Size = new System.Drawing.Size(124, 17);
-            this.Past_Bookings.TabIndex = 4;
-            this.Past_Bookings.Text = "Show Past Bookings";
-            this.Past_Bookings.UseVisualStyleBackColor = true;
-            // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(154, 21);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(210, 17);
-            this.checkBox2.TabIndex = 5;
-            this.checkBox2.Text = "Show Bookings you\'ve made for others";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.Bookings_For_others_check.AutoSize = true;
+            this.Bookings_For_others_check.Location = new System.Drawing.Point(17, 26);
+            this.Bookings_For_others_check.Name = "Bookings_For_others_check";
+            this.Bookings_For_others_check.Size = new System.Drawing.Size(210, 17);
+            this.Bookings_For_others_check.TabIndex = 5;
+            this.Bookings_For_others_check.Text = "Show Bookings you\'ve made for others";
+            this.Bookings_For_others_check.UseVisualStyleBackColor = true;
+            this.Bookings_For_others_check.CheckedChanged += new System.EventHandler(this.Bookings_For_others_check_CheckedChanged);
             // 
             // View_Bookings
             // 
@@ -102,8 +92,7 @@
             this.CancelButton = this.Back;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.ControlBox = false;
-            this.Controls.Add(this.checkBox2);
-            this.Controls.Add(this.Past_Bookings);
+            this.Controls.Add(this.Bookings_For_others_check);
             this.Controls.Add(this.Transfer_Booking);
             this.Controls.Add(this.Cancel_Booking);
             this.Controls.Add(this.Back);
@@ -122,7 +111,6 @@
         private System.Windows.Forms.Button Back;
         private System.Windows.Forms.Button Cancel_Booking;
         private System.Windows.Forms.Button Transfer_Booking;
-        private System.Windows.Forms.CheckBox Past_Bookings;
-        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.CheckBox Bookings_For_others_check;
     }
 }

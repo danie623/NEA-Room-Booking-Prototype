@@ -27,18 +27,12 @@ namespace NEA_Room_Booking_Prototype
 		string currentUser = null;
 		List<String> idOfRoomsList;
 
-
-
 		public BookingScreen()
 		{
 			InitializeComponent();
 			sqlConnection = new SqlConnection(CONNECT);
 			GetTags();
 			Adddates();
-			Book_Room_Button.Enabled = false;
-			Book_Room_Button.Visible = false;
-			ViewBookings.Enabled = false;
-			ViewBookings.Visible = false;
 		}
 
 
@@ -85,29 +79,32 @@ namespace NEA_Room_Booking_Prototype
 
 		private void getBookedForTeachers()
 		{
-			if (sqlConnection.State != ConnectionState.Open)
+			if (currentUser != null)
 			{
-				sqlConnection.ConnectionString = CONNECT;
-				sqlConnection.Open();
-            }
-			teacherBookingFor.Items.Clear();
-			teacherBookingFor.Items.Add("Myself");
-			teacherBookingFor.SelectedIndex = 0;
-            SqlCommand command = new SqlCommand("SELECT TeacherInitials FROM Teachers ORDER BY TeacherInitials", sqlConnection);
-			using (SqlDataReader Reader = command.ExecuteReader())
-			{
-				while (Reader.Read())
+				if (sqlConnection.State != ConnectionState.Open)
 				{
-					if (!($"{Reader["TeacherInitials"]}".Equals(currentUser)))
+					sqlConnection.ConnectionString = CONNECT;
+					sqlConnection.Open();
+				}
+				teacherBookingFor.Items.Clear();
+				teacherBookingFor.Items.Add("Myself");
+				teacherBookingFor.SelectedIndex = 0;
+				SqlCommand command = new SqlCommand("SELECT TeacherInitials FROM Teachers ORDER BY TeacherInitials", sqlConnection);
+				using (SqlDataReader Reader = command.ExecuteReader())
+				{
+					while (Reader.Read())
 					{
-						teacherBookingFor.Items.Add($"{Reader["TeacherInitials"]}");
+						if (!($"{Reader["TeacherInitials"]}".Equals(currentUser)))
+						{
+							teacherBookingFor.Items.Add($"{Reader["TeacherInitials"]}");
+						}
 					}
 				}
+				if (sqlConnection.State == ConnectionState.Open)
+				{
+					sqlConnection.Close();
+				}
 			}
-			if (sqlConnection.State == ConnectionState.Open)
-			{
-				sqlConnection.Close();
-            }
         }
 		private void BookingScreen_Load(object sender, EventArgs e)
 		{
@@ -132,14 +129,22 @@ namespace NEA_Room_Booking_Prototype
 				PasswordLabel.Enabled = true;
 				ViewBookings.Enabled = false;
 				ViewBookings.Visible = false;
-				loggedIn = false;
+                Book_Room_Button.Enabled = false;
+                Book_Room_Button.Visible = false;
+                loggedIn = false;
 				ShowBookingbutton(false);
 				LogInStatus.Text = "You are not logged in. \nYou need to log in to book a room.";
 			}
 
 			else
 			{
-				if (sqlConnection.State != ConnectionState.Open)
+                Book_Room_Button.Enabled = false;
+                Book_Room_Button.Visible = false;
+                ViewBookings.Enabled = false;
+                ViewBookings.Visible = false;
+
+                //open connection
+                if (sqlConnection.State != ConnectionState.Open)
 				{
 					sqlConnection.ConnectionString = CONNECT;
 					sqlConnection.Open();
@@ -151,7 +156,7 @@ namespace NEA_Room_Booking_Prototype
 				//parameters
 				SqlParameter paramUser = new SqlParameter();
 				paramUser.ParameterName = "@initials";
-				paramUser.Value = InitialsBox.Text;
+				paramUser.Value = InitialsBox.Text.ToUpper();
 				SqlParameter paramPass = new SqlParameter();
 				paramPass.ParameterName = "@pass";
 				paramPass.Value = PasswordBox.Text;
@@ -177,9 +182,8 @@ namespace NEA_Room_Booking_Prototype
 						PasswordLabel.Enabled = false;
 						ViewBookings.Enabled = true;
 						ViewBookings.Visible = true;
-						LogInStatus.Text = "Welcome " + currentUser.ToUpper();
+                        LogInStatus.Text = "Welcome " + currentUser.ToUpper();
 						RoomsList_SelectedIndexChanged(sender, EventArgs.Empty);
-						getBookedForTeachers();
                     }
 					else
 					{
@@ -192,7 +196,9 @@ namespace NEA_Room_Booking_Prototype
 				{
 					sqlConnection.Close();
 				}
-			}
+				getBookedForTeachers();
+
+            }
 		}
 
 
@@ -305,9 +311,9 @@ namespace NEA_Room_Booking_Prototype
 			int selectedPeriod = int.Parse($"{PeriodSelect.SelectedItem}");
 			DateTime selectedDate =  DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
 			String teacherBoooking = currentUser;
-			string teacherBookedFor = ((teacherBookingFor.SelectedIndex != 0) ? $"{teacherBookingFor.SelectedItem}" : null);
+			String teacherBookedFor = ((teacherBookingFor.SelectedIndex != 0) ? $"{teacherBookingFor.SelectedItem}" : currentUser);
       
-            popup.showMessage(selectedRoom, selectedPeriod, selectedDate, teacherBoooking);
+            popup.showMessage(selectedRoom, selectedPeriod, selectedDate, teacherBookedFor);
 			
 
 			

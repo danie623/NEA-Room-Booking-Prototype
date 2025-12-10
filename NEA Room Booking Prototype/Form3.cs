@@ -44,27 +44,71 @@ namespace NEA_Room_Booking_Prototype
 		private void Get_Bookings(string teacher)
 		{
 			bookingIDs = new List<String>();
-			DateTime dateOfBooking;
-			//connect to database
-			if (sqlConnection2.State != ConnectionState.Open)
+			SqlCommand command;
+            DateTime dateOfBooking;
+			string whoBooked = null;
+			string bookedFor = null;
+            //connect to database
+            if (sqlConnection2.State != ConnectionState.Open)
 			{
 				sqlConnection2.Open();
 			}
 
 			//get bookings for teacher
-			SqlCommand command = new SqlCommand("SELECT * FROM Bookings WHERE TeacherInitials = @teacher ORDER BY DateOfBooking ASC, BookedPeriod ASC; --AND DateOfBooking >= @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2 );
-			command.Parameters.AddWithValue("@teacher", teacher);
-			command.Parameters.AddWithValue("@date", DateTime.Now.AddDays(-1));
-			using (SqlDataReader reader = command.ExecuteReader())
-			{
-				while (reader.Read())
+			if (Bookings_For_others_check.Checked)
+			{ 
+                command = new SqlCommand("SELECT * FROM Bookings WHERE (TeacherInitials = @teacher OR BookedFor = @teacher) AND DateOfBooking > @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2);
+				command.Parameters.AddWithValue("@teacher", teacher);
+				command.Parameters.AddWithValue("@date", DateTime.Now.AddDays(-1));
+				using (SqlDataReader reader = command.ExecuteReader())
 				{
-					//display bookings in listbox
-					bookingIDs.Add($"{reader["bookingID"]}");
-					dateOfBooking = (DateTime) reader["DateOfBooking"];
-					BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0,10)} period: {reader["BookedPeriod"]}");
+					while (reader.Read())
+					{
+						//display bookings in listbox
+						bookingIDs.Add($"{reader["bookingID"]}");
+						whoBooked = ($"{reader["TeacherInitials"]}").ToUpper();
+						bookedFor = ($"{reader["BookedFor"]}").ToUpper();
+						dateOfBooking = (DateTime)reader["DateOfBooking"];
+						if (whoBooked == currentUser.ToUpper() && bookedFor == currentUser.ToUpper())
+						{
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]}");
+						}
+						else if (whoBooked == currentUser.ToUpper() && bookedFor != currentUser.ToUpper())
+						{
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]} \nBooked for {bookedFor} by you.");
+						}
+						else
+						{
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
+						}
+					}
 				}
 			}
+			else
+			{ 
+				command = new SqlCommand("SELECT * FROM Bookings WHERE BookedFor = @teacher AND DateOfBooking > @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2);
+				command.Parameters.AddWithValue("@teacher", teacher);
+				command.Parameters.AddWithValue("@date", DateTime.Now.AddDays(-1));
+				using (SqlDataReader reader = command.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						//display bookings in listbox
+						bookingIDs.Add($"{reader["bookingID"]}");
+						whoBooked = ($"{reader["TeacherInitials"]}").ToUpper();
+						dateOfBooking = (DateTime)reader["DateOfBooking"];
+						if (whoBooked == currentUser.ToUpper())
+						{
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]}");
+						}
+						else
+						{
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
+						}
+					}
+				}
+			}
+            
 
 			
 			if (sqlConnection2.State == ConnectionState.Open)
@@ -136,6 +180,11 @@ namespace NEA_Room_Booking_Prototype
 			{
 				sqlConnection2.Close();
             }
+        }
+
+        private void Bookings_For_others_check_CheckedChanged(object sender, EventArgs e)
+        {
+			Get_Bookings(currentUser);
         }
     }
 }
