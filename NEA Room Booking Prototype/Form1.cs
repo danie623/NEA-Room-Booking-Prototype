@@ -310,7 +310,7 @@ namespace NEA_Room_Booking_Prototype
             popup.showMessage(selectedRoom, selectedPeriod, selectedDate, teacherBookedFor);
 			
 
-			
+
 			if (popup.ShowDialog() == DialogResult.OK)
 			{
 				if (sqlConnection.State != ConnectionState.Open)

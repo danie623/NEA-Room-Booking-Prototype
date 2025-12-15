@@ -186,5 +186,10 @@ namespace NEA_Room_Booking_Prototype
         {
 			Get_Bookings(currentUser);
         }
-    }
+
+		private void Transfer_Booking_Click(object sender, EventArgs e)
+		{
+
+		}
+	}
 }
