@@ -55,14 +55,13 @@
 			this.TagsList.Location = new System.Drawing.Point(20, 29);
 			this.TagsList.Margin = new System.Windows.Forms.Padding(2);
 			this.TagsList.Name = "TagsList";
-			this.TagsList.Size = new System.Drawing.Size(153, 119);
+			this.TagsList.Size = new System.Drawing.Size(153, 109);
 			this.TagsList.TabIndex = 0;
 			this.TagsList.SelectedIndexChanged += new System.EventHandler(this.checkedListBox1_SelectedIndexChanged);
 			// 
 			// RoomsList
 			// 
 			this.RoomsList.FormattingEnabled = true;
-			this.RoomsList.ItemHeight = 20;
 			this.RoomsList.Location = new System.Drawing.Point(193, 82);
 			this.RoomsList.Margin = new System.Windows.Forms.Padding(2);
 			this.RoomsList.Name = "RoomsList";
@@ -84,7 +83,7 @@
 			this.PeriodSelect.Location = new System.Drawing.Point(273, 46);
 			this.PeriodSelect.Margin = new System.Windows.Forms.Padding(2);
 			this.PeriodSelect.Name = "PeriodSelect";
-			this.PeriodSelect.Size = new System.Drawing.Size(35, 45);
+			this.PeriodSelect.Size = new System.Drawing.Size(35, 33);
 			this.PeriodSelect.Sorted = true;
 			this.PeriodSelect.TabIndex = 2;
 			this.PeriodSelect.SelectedIndexChanged += new System.EventHandler(this.PeriodSelect_SelectedIndexChanged);
@@ -95,7 +94,7 @@
 			this.label1.Location = new System.Drawing.Point(17, 14);
 			this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(166, 20);
+			this.label1.Size = new System.Drawing.Size(109, 13);
 			this.label1.TabIndex = 3;
 			this.label1.Text = "Filter By: (Equiptment)";
 			// 
@@ -114,7 +113,7 @@
 			this.PasswordBox.Margin = new System.Windows.Forms.Padding(2);
 			this.PasswordBox.Name = "PasswordBox";
 			this.PasswordBox.PasswordChar = '*';
-			this.PasswordBox.Size = new System.Drawing.Size(119, 26);
+			this.PasswordBox.Size = new System.Drawing.Size(119, 20);
 			this.PasswordBox.TabIndex = 16;
 			this.PasswordBox.UseSystemPasswordChar = true;
 			this.PasswordBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.PasswordBox_KeyDown);
@@ -125,7 +124,7 @@
 			this.InitialsBox.Margin = new System.Windows.Forms.Padding(2);
 			this.InitialsBox.MaxLength = 3;
 			this.InitialsBox.Name = "InitialsBox";
-			this.InitialsBox.Size = new System.Drawing.Size(119, 26);
+			this.InitialsBox.Size = new System.Drawing.Size(119, 20);
 			this.InitialsBox.TabIndex = 15;
 			this.InitialsBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.InitialsBox_KeyDown);
 			// 
@@ -147,7 +146,7 @@
 			this.Period.Location = new System.Drawing.Point(190, 51);
 			this.Period.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.Period.Name = "Period";
-			this.Period.Size = new System.Drawing.Size(118, 37);
+			this.Period.Size = new System.Drawing.Size(81, 26);
 			this.Period.TabIndex = 18;
 			this.Period.Text = "Period:";
 			// 
@@ -157,7 +156,7 @@
 			this.InitialsLabel.Location = new System.Drawing.Point(1135, 46);
 			this.InitialsLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.InitialsLabel.Name = "InitialsLabel";
-			this.InitialsLabel.Size = new System.Drawing.Size(58, 20);
+			this.InitialsLabel.Size = new System.Drawing.Size(39, 13);
 			this.InitialsLabel.TabIndex = 19;
 			this.InitialsLabel.Text = "Initials:";
 			// 
@@ -167,7 +166,7 @@
 			this.PasswordLabel.Location = new System.Drawing.Point(1135, 79);
 			this.PasswordLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.PasswordLabel.Name = "PasswordLabel";
-			this.PasswordLabel.Size = new System.Drawing.Size(82, 20);
+			this.PasswordLabel.Size = new System.Drawing.Size(56, 13);
 			this.PasswordLabel.TabIndex = 20;
 			this.PasswordLabel.Text = "Password:";
 			// 
@@ -178,7 +177,7 @@
 			this.DateBox.Location = new System.Drawing.Point(465, 48);
 			this.DateBox.Margin = new System.Windows.Forms.Padding(2);
 			this.DateBox.Name = "DateBox";
-			this.DateBox.Size = new System.Drawing.Size(229, 37);
+			this.DateBox.Size = new System.Drawing.Size(229, 28);
 			this.DateBox.TabIndex = 21;
 			this.DateBox.SelectedIndexChanged += new System.EventHandler(this.DateBox_SelectedIndexChanged);
 			// 
@@ -189,7 +188,7 @@
 			this.label2.Location = new System.Drawing.Point(383, 48);
 			this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(93, 37);
+			this.label2.Size = new System.Drawing.Size(64, 26);
 			this.label2.TabIndex = 22;
 			this.label2.Text = "Date:";
 			// 
@@ -222,7 +221,7 @@
 			this.ShowAlreadyBookedRooms.AutoSize = true;
 			this.ShowAlreadyBookedRooms.Location = new System.Drawing.Point(20, 257);
 			this.ShowAlreadyBookedRooms.Name = "ShowAlreadyBookedRooms";
-			this.ShowAlreadyBookedRooms.Size = new System.Drawing.Size(189, 24);
+			this.ShowAlreadyBookedRooms.Size = new System.Drawing.Size(129, 17);
 			this.ShowAlreadyBookedRooms.TabIndex = 25;
 			this.ShowAlreadyBookedRooms.Text = "Show Booked Rooms";
 			this.ShowAlreadyBookedRooms.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -247,7 +246,7 @@
 			this.teacherBookingFor.Location = new System.Drawing.Point(12, 343);
 			this.teacherBookingFor.MaxDropDownItems = 10;
 			this.teacherBookingFor.Name = "teacherBookingFor";
-			this.teacherBookingFor.Size = new System.Drawing.Size(157, 28);
+			this.teacherBookingFor.Size = new System.Drawing.Size(157, 21);
 			this.teacherBookingFor.TabIndex = 27;
 			this.teacherBookingFor.Visible = false;
 			// 
@@ -257,7 +256,7 @@
 			this.BookingForLabel.Enabled = false;
 			this.BookingForLabel.Location = new System.Drawing.Point(17, 327);
 			this.BookingForLabel.Name = "BookingForLabel";
-			this.BookingForLabel.Size = new System.Drawing.Size(127, 20);
+			this.BookingForLabel.Size = new System.Drawing.Size(86, 13);
 			this.BookingForLabel.TabIndex = 28;
 			this.BookingForLabel.Text = "I am booking for:";
 			this.BookingForLabel.Visible = false;
@@ -265,7 +264,7 @@
 			// BookingScreen
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-			this.ClientSize = new System.Drawing.Size(1263, 649);
+			this.ClientSize = new System.Drawing.Size(1269, 666);
 			this.Controls.Add(this.BookingForLabel);
 			this.Controls.Add(this.teacherBookingFor);
 			this.Controls.Add(this.ViewBookings);

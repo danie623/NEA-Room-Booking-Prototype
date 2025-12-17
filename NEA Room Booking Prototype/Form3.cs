@@ -189,7 +189,15 @@ namespace NEA_Room_Booking_Prototype
 
 		private void Transfer_Booking_Click(object sender, EventArgs e)
 		{
-
+			TransferBookingScreen transferForm = new TransferBookingScreen();
+			transferForm.Get_Booking_ID(selectedBookingID);
+			transferForm.Get_Current_User(currentUser);
+			transferForm.Show();
+			this.Enabled = false;
+			if (transferForm.DialogResult != null)
+			{
+				this.Enabled = true;
+			}
 		}
 	}
 }

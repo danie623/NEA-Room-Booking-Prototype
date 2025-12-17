@@ -33,6 +33,9 @@ namespace NEA_Room_Booking_Prototype
 			sqlConnection = new SqlConnection(CONNECT);
 			GetTags();
 			Adddates();
+			this.Enabled = true;
+			GetRooms.PerformClick();
+
 		}
 
 
