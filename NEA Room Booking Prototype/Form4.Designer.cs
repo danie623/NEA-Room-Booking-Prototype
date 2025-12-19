@@ -37,8 +37,8 @@
 			// TeacherList
 			// 
 			this.TeacherList.FormattingEnabled = true;
-			this.TeacherList.Location = new System.Drawing.Point(173, 146);
-			this.TeacherList.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.TeacherList.Location = new System.Drawing.Point(192, 167);
+			this.TeacherList.Margin = new System.Windows.Forms.Padding(2);
 			this.TeacherList.Name = "TeacherList";
 			this.TeacherList.Size = new System.Drawing.Size(159, 21);
 			this.TeacherList.TabIndex = 0;
@@ -46,30 +46,32 @@
 			// 
 			// TransferMsg
 			// 
-			this.TransferMsg.AutoSize = true;
-			this.TransferMsg.Location = new System.Drawing.Point(238, 55);
+			this.TransferMsg.Anchor = System.Windows.Forms.AnchorStyles.Top;
+			this.TransferMsg.Location = new System.Drawing.Point(154, 9);
 			this.TransferMsg.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.TransferMsg.Name = "TransferMsg";
-			this.TransferMsg.Size = new System.Drawing.Size(35, 13);
+			this.TransferMsg.Size = new System.Drawing.Size(223, 139);
 			this.TransferMsg.TabIndex = 1;
 			this.TransferMsg.Text = "label1";
+			this.TransferMsg.TextAlign = System.Drawing.ContentAlignment.TopCenter;
 			// 
 			// Confirm
 			// 
 			this.Confirm.Enabled = false;
 			this.Confirm.Location = new System.Drawing.Point(320, 213);
-			this.Confirm.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.Confirm.Margin = new System.Windows.Forms.Padding(2);
 			this.Confirm.Name = "Confirm";
 			this.Confirm.Size = new System.Drawing.Size(153, 49);
 			this.Confirm.TabIndex = 2;
 			this.Confirm.Text = "Confirm Transfer";
 			this.Confirm.UseVisualStyleBackColor = true;
+			this.Confirm.Click += new System.EventHandler(this.Confirm_Click);
 			// 
 			// Cancel
 			// 
 			this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.Cancel.Location = new System.Drawing.Point(58, 213);
-			this.Cancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.Cancel.Margin = new System.Windows.Forms.Padding(2);
 			this.Cancel.Name = "Cancel";
 			this.Cancel.Size = new System.Drawing.Size(153, 49);
 			this.Cancel.TabIndex = 3;
@@ -87,12 +89,11 @@
 			this.Controls.Add(this.Confirm);
 			this.Controls.Add(this.TransferMsg);
 			this.Controls.Add(this.TeacherList);
-			this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "TransferBookingScreen";
 			this.Text = "Form4";
 			this.Load += new System.EventHandler(this.TransferBookingScreen_Load);
 			this.ResumeLayout(false);
-			this.PerformLayout();
 
 		}
 

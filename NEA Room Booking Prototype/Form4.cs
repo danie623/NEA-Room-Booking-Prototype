@@ -65,7 +65,7 @@ namespace NEA_Room_Booking_Prototype
 
 		public void Get_Current_User(string currentUser)
 		{
-			CurrentUser = currentUser;
+			CurrentUser = currentUser.ToUpper();
 			fill_teacher_initials();
 		}
 
@@ -87,7 +87,7 @@ namespace NEA_Room_Booking_Prototype
 			{
 				while (reader.Read())
 				{
-					tempInitials = reader["TeacherInitials"].ToString();
+					tempInitials = reader["TeacherInitials"].ToString().ToUpper();
 					teacher_initials.Add(tempInitials);
 					if (tempInitials != CurrentUser)
 					{
@@ -107,10 +107,9 @@ namespace NEA_Room_Booking_Prototype
 			}
 		}
 
-		private void ConfirmTransferButton_Click(object sender, EventArgs e)
+		private void Confirm_Click(object sender, EventArgs e)
 		{
-			this.Enabled=false;
-			if (TeacherList.SelectedItem != null)
+			if (TeacherList.SelectedItem == null)
 			{
 				MessageBox.Show("Select a teacher to transfer this booking to. \nIf you are trying to cancel a booking please close this menu and select the cancel booking button.");
 			}
@@ -134,14 +133,14 @@ namespace NEA_Room_Booking_Prototype
 				
 				if (rowsAffected > 0)
 				{
-					MessageBox.Show($"Booking transferred to {bookingID_to_transfer} successfully.");
+					MessageBox.Show($"Booking transferred to {teacher_initials[TeacherList.SelectedIndex]} successfully.");
 					DialogResult = DialogResult.OK;
 					this.Close();
 				}
 				else
 				{
 					MessageBox.Show("Error transferring booking. Please try again.");
-					this.Enabled = true;
+					this.Close();
 				}
 				
 				if (sqlConnection3.State == ConnectionState.Open)
@@ -167,5 +166,7 @@ namespace NEA_Room_Booking_Prototype
 				Confirm.Enabled = false;
 			}
 		}
+
+		
 	}
 }
