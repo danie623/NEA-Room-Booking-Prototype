@@ -26,6 +26,8 @@ namespace NEA_Room_Booking_Prototype
 		bool loggedIn = false;
 		string currentUser = null;
 		List<String> idOfRoomsList;
+		List<string> transferBookings;
+		bool booking = true;
 
 		public BookingScreen()
 		{
@@ -225,35 +227,99 @@ namespace NEA_Room_Booking_Prototype
 
 			RoomsList.Items.Clear();
 			idOfRoomsList = new List<string> ();
+			transferBookings = new List<string>();
 			int countIndex = 0;
 			SqlCommand command;
 
-			if (GetChosenTags().Count == 0)
+			if (booking)
 			{
-				command = new SqlCommand("SELECT * FROM Rooms;", sqlConnection);
-				using (SqlDataReader Reader = command.ExecuteReader())
+				if (GetChosenTags().Count == 0)
 				{
-					while (Reader.Read())
+					command = new SqlCommand("SELECT r.RoomID, r.Seats, r.Department FROM Rooms r, bookings b where r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor);", sqlConnection);
+					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
+					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
+
+					using (SqlDataReader Reader = command.ExecuteReader())
 					{
-						idOfRoomsList.Add($"{Reader["RoomID"]}");
-						RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
-						countIndex++;
+						while (Reader.Read())
+						{
+							idOfRoomsList.Add($"{Reader["RoomID"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							countIndex++;
+						}
+					}
+				}
+				else if (GetChosenTags().Count != 0)
+				{
+					command = new SqlCommand($"SELECT * FROM Rooms r, Tags t, TagAssign ta, Bookings b WHERE (r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor)) AND r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
+					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
+					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
+
+					using (SqlDataReader Reader = command.ExecuteReader())
+					{
+						while (Reader.Read())
+						{
+							idOfRoomsList.Add($"{Reader["RoomID"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							countIndex++;
+						}
 					}
 				}
 			}
 			else
 			{
-				command = new SqlCommand($"SELECT * FROM Rooms r, Tags t, TagAssign ta WHERE r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
-				using (SqlDataReader Reader = command.ExecuteReader())
+				
+				if (GetChosenTags().Count == 0)
 				{
-					while (Reader.Read())
+					command = new SqlCommand("SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r LEFT JOIN Bookings b    ON b.RoomID = r.RoomID    AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor;", sqlConnection);
+					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
+					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
+
+					using (SqlDataReader Reader = command.ExecuteReader())
 					{
-						idOfRoomsList.Add($"{Reader["RoomID"]}");
-						RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
-						countIndex++;
+						while (Reader.Read())
+						{
+							idOfRoomsList.Add($"{Reader["RoomID"]}");
+							if ($"{Reader["TeacherInitials"]}" != "Null")
+							{
+								transferBookings.Add($"{Reader["RoomID"]}");
+								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["TeacherInitials"]}");
+							}
+							else
+							{
+								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							}
+							countIndex++;
+						}
+					}
+				}
+				else if (GetChosenTags().Count != 0)
+				{
+					command = new SqlCommand($"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r LEFT JOIN Bookings b ON b.RoomID = r.RoomID    AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor WHERE (r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor)) AND r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
+					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
+					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
+
+					using (SqlDataReader Reader = command.ExecuteReader())
+					{
+						while (Reader.Read())
+						{
+							idOfRoomsList.Add($"{Reader["RoomID"]}");
+							if ($"{Reader["TeacherInitials"]}" != "Null")
+							{
+								transferBookings.Add($"{Reader["RoomID"]}");
+								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["TeacherInitials"]}");
+							}
+							else
+							{
+								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							}
+							countIndex++;
+						}
 					}
 				}
 			}
+
+
 
 			if (sqlConnection.State == ConnectionState.Open)
 			{
