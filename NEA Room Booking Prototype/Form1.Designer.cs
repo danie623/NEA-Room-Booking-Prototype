@@ -226,6 +226,7 @@
 			this.ShowAlreadyBookedRooms.Text = "Show Booked Rooms";
 			this.ShowAlreadyBookedRooms.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this.ShowAlreadyBookedRooms.UseVisualStyleBackColor = true;
+			this.ShowAlreadyBookedRooms.CheckedChanged += new System.EventHandler(this.ShowAlreadyBookedRooms_CheckedChanged);
 			// 
 			// ViewBookings
 			// 

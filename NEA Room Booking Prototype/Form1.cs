@@ -231,7 +231,7 @@ namespace NEA_Room_Booking_Prototype
 			int countIndex = 0;
 			SqlCommand command;
 
-			if (booking)
+			if (ShowAlreadyBookedRooms.CheckState != CheckState.Checked)
 			{
 				if (GetChosenTags().Count == 0)
 				{
@@ -244,7 +244,7 @@ namespace NEA_Room_Booking_Prototype
 						while (Reader.Read())
 						{
 							idOfRoomsList.Add($"{Reader["RoomID"]}");
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department:{Reader["Department"]}");
 							countIndex++;
 						}
 					}
@@ -260,7 +260,7 @@ namespace NEA_Room_Booking_Prototype
 						while (Reader.Read())
 						{
 							idOfRoomsList.Add($"{Reader["RoomID"]}");
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department:{Reader["Department"]}");
 							countIndex++;
 						}
 					}
@@ -271,7 +271,7 @@ namespace NEA_Room_Booking_Prototype
 				
 				if (GetChosenTags().Count == 0)
 				{
-					command = new SqlCommand("SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r LEFT JOIN Bookings b    ON b.RoomID = r.RoomID    AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor;", sqlConnection);
+					command = new SqlCommand("SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r, Tags t, TagAssign ta LEFT JOIN Bookings b ON b.RoomID = r.RoomID AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor;", sqlConnection);
 					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
 					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
 
@@ -295,7 +295,7 @@ namespace NEA_Room_Booking_Prototype
 				}
 				else if (GetChosenTags().Count != 0)
 				{
-					command = new SqlCommand($"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r LEFT JOIN Bookings b ON b.RoomID = r.RoomID    AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor WHERE (r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor)) AND r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
+					command = new SqlCommand($"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r, Tags t, TagAssign ta LEFT JOIN Bookings b ON b.RoomID = r.RoomID    AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor WHERE (r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor)) AND r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
 					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
 					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
 
@@ -307,7 +307,7 @@ namespace NEA_Room_Booking_Prototype
 							if ($"{Reader["TeacherInitials"]}" != "Null")
 							{
 								transferBookings.Add($"{Reader["RoomID"]}");
-								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["TeacherInitials"]}");
+								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["TeacherInitials"]}"); 
 							}
 							else
 							{
@@ -327,42 +327,8 @@ namespace NEA_Room_Booking_Prototype
 			}
 		}
 
-		// Room selection changed
-		private void RoomsList_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (RoomsList.SelectedIndex != -1)
-			{
-				ShowBookingbutton(true);
-			}
-			else
-			{
-				ShowBookingbutton(false);
-			}
-		}
 
 
-		// Show or hide book room button function
-		private void ShowBookingbutton(bool show)
-		{
-			if (loggedIn && PeriodSelect.SelectedIndex != -1 && DateBox.SelectedIndex != -1)
-			{
-				Book_Room_Button.Enabled = show;
-				Book_Room_Button.Visible = show;
-				BookingForLabel.Enabled = show;
-				BookingForLabel.Visible = show;
-				teacherBookingFor.Enabled = show;
-				teacherBookingFor.Visible = show;
-            }
-			else
-			{
-				Book_Room_Button.Enabled = false;
-				Book_Room_Button.Visible = false;
-				BookingForLabel.Enabled = false;
-				BookingForLabel.Visible = false;
-				teacherBookingFor.Enabled = false;
-				teacherBookingFor.Visible = false;
-            }
-		}
 
 
 		// Book room button
@@ -435,13 +401,48 @@ namespace NEA_Room_Booking_Prototype
 		}
 
 
+		#region show/hide buttons
 
+		// Room selection changed
+		private void RoomsList_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (RoomsList.SelectedIndex != -1)
+			{
+				ShowBookingbutton(true);
+			}
+			else
+			{
+				ShowBookingbutton(false);
+			}
+		}
 
+		// Show or hide book room button function
+		private void ShowBookingbutton(bool show)
+		{
+			if (loggedIn && PeriodSelect.SelectedIndex != -1 && DateBox.SelectedIndex != -1)
+			{
+				Book_Room_Button.Enabled = show;
+				Book_Room_Button.Visible = show;
+				BookingForLabel.Enabled = show;
+				BookingForLabel.Visible = show;
+				teacherBookingFor.Enabled = show;
+				teacherBookingFor.Visible = show;
+			}
+			else
+			{
+				Book_Room_Button.Enabled = false;
+				Book_Room_Button.Visible = false;
+				BookingForLabel.Enabled = false;
+				BookingForLabel.Visible = false;
+				teacherBookingFor.Enabled = false;
+				teacherBookingFor.Visible = false;
+			}
+		}
+		#endregion
 
-
-        // refreshes etc.
-        #region key and button pushes
-        private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
+		// refreshes etc.
+		#region key and button pushes
+		private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.KeyCode == Keys.Enter) { Login.PerformClick(); }
 		}
@@ -455,8 +456,12 @@ namespace NEA_Room_Booking_Prototype
         {
 			GetRooms.PerformClick();
         }
+		private void ShowAlreadyBookedRooms_CheckedChanged(object sender, EventArgs e)
+		{
+			GetRooms.PerformClick();
+		}
 
-        private void DateBox_SelectedIndexChanged(object sender, EventArgs e)
+		private void DateBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             GetRooms.PerformClick();
         }
@@ -464,7 +469,7 @@ namespace NEA_Room_Booking_Prototype
         {
             GetRooms.PerformClick();
         }
-        #endregion
-    }
+		#endregion
+	}
 }
 
