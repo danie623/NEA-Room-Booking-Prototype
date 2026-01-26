@@ -47,6 +47,8 @@
 			this.ViewBookings = new System.Windows.Forms.Button();
 			this.teacherBookingFor = new System.Windows.Forms.ComboBox();
 			this.BookingForLabel = new System.Windows.Forms.Label();
+			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			this.TransferRequests = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// TagsList
@@ -262,10 +264,23 @@
 			this.BookingForLabel.Text = "I am booking for:";
 			this.BookingForLabel.Visible = false;
 			// 
+			// TransferRequests
+			// 
+			this.TransferRequests.Enabled = false;
+			this.TransferRequests.Location = new System.Drawing.Point(856, 591);
+			this.TransferRequests.Name = "TransferRequests";
+			this.TransferRequests.Size = new System.Drawing.Size(197, 63);
+			this.TransferRequests.TabIndex = 29;
+			this.TransferRequests.Text = "Review Transfer Requests";
+			this.TransferRequests.UseVisualStyleBackColor = true;
+			this.TransferRequests.Visible = false;
+			this.TransferRequests.Click += new System.EventHandler(this.TransferRequests_Click);
+			// 
 			// BookingScreen
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(1269, 666);
+			this.Controls.Add(this.TransferRequests);
 			this.Controls.Add(this.BookingForLabel);
 			this.Controls.Add(this.teacherBookingFor);
 			this.Controls.Add(this.ViewBookings);
@@ -318,6 +333,8 @@
 		private System.Windows.Forms.Button ViewBookings;
         private System.Windows.Forms.ComboBox teacherBookingFor;
         private System.Windows.Forms.Label BookingForLabel;
-    }
+		private System.ComponentModel.BackgroundWorker backgroundWorker1;
+		private System.Windows.Forms.Button TransferRequests;
+	}
 }
 
