@@ -151,46 +151,49 @@ namespace NEA_Room_Booking_Prototype
 				}
 
 				//setup query
-				SqlCommand command = new SqlCommand("SELECT * FROM Teachers WHERE TeacherInitials=@initials AND Password=@pass", sqlConnection);
+				SqlCommand command = new SqlCommand("SELECT Password FROM Teachers WHERE TeacherInitials=@initials", sqlConnection);
 
 				//parameters
 				SqlParameter paramUser = new SqlParameter();
 				paramUser.ParameterName = "@initials";
 				paramUser.Value = InitialsBox.Text.ToUpper();
-				SqlParameter paramPass = new SqlParameter();
-				paramPass.ParameterName = "@pass";
-				paramPass.Value = PasswordBox.Text;
+				
+
+				string PasswordInput = PasswordBox.Text;
 
 
 
 				//add params to the query
 				command.Parameters.Add(paramUser);
-				command.Parameters.Add(paramPass);
 
 				using (SqlDataReader reader = command.ExecuteReader())
 				{
-					if (reader.Read())
+					while (reader.Read())
 					{
-						currentUser = InitialsBox.Text;
-						InitialsBox.Text = "";
-						PasswordBox.Text = "";
-						loggedIn = true;
-						Login.Text = "Logout";
-						InitialsBox.Enabled = false;
-						PasswordBox.Enabled = false;
-						InitialsLabel.Enabled = false;
-						PasswordLabel.Enabled = false;
-						ViewBookings.Enabled = true;
-						ViewBookings.Visible = true;
-                        LogInStatus.Text = "Welcome " + currentUser.ToUpper();
-						RoomsList_SelectedIndexChanged(sender, EventArgs.Empty);
+						if (PasswordInput == $"{reader["Password"]}")
+						{
+							currentUser = InitialsBox.Text;
+							InitialsBox.Text = "";
+							PasswordBox.Text = "";
+							loggedIn = true;
+							Login.Text = "Logout";
+							InitialsBox.Enabled = false;
+							PasswordBox.Enabled = false;
+							InitialsLabel.Enabled = false;
+							PasswordLabel.Enabled = false;
+							ViewBookings.Enabled = true;
+							ViewBookings.Visible = true;
+							LogInStatus.Text = "Welcome " + currentUser.ToUpper();
+							RoomsList_SelectedIndexChanged(sender, EventArgs.Empty);
+						}
+						else
+						{
+							loggedIn = false;
+							currentUser = null;
+							LogInStatus.Text = "Incorrect initials or password!";
+						}
                     }
-					else
-					{
-						loggedIn = false;
-						currentUser = null;
-						LogInStatus.Text = "Incorrect initials or password!";
-					}
+					
 				}
 				if (sqlConnection.State == ConnectionState.Open)
 				{
@@ -214,123 +217,6 @@ namespace NEA_Room_Booking_Prototype
 			}
 			return tags;
 		}
-
-
-		/*
-		// Get rooms button
-		private void GetRooms_Click_1(object sender, EventArgs e)
-		{
-			if (sqlConnection.State != ConnectionState.Open)
-			{
-				sqlConnection.ConnectionString = CONNECT;
-				sqlConnection.Open();
-			}
-
-			RoomsList.Items.Clear();
-			idOfRoomsList = new List<string> ();
-			transferBookings = new List<string>();
-			int countIndex = 0;
-			SqlCommand command;
-
-			if (ShowAlreadyBookedRooms.CheckState != CheckState.Checked)
-			{
-				if (GetChosenTags().Count == 0)
-				{
-					command = new SqlCommand("SELECT r.RoomID, r.Seats, r.Department FROM Rooms r, bookings b where r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor);", sqlConnection);
-					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
-					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
-
-					using (SqlDataReader Reader = command.ExecuteReader())
-					{
-						while (Reader.Read())
-						{
-							idOfRoomsList.Add($"{Reader["RoomID"]}");
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department:{Reader["Department"]}");
-							countIndex++;
-						}
-					}
-				}
-				else if (GetChosenTags().Count != 0)
-				{
-					command = new SqlCommand($"SELECT * FROM Rooms r, Tags t, TagAssign ta, Bookings b WHERE (r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor)) AND r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
-					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
-					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
-
-					using (SqlDataReader Reader = command.ExecuteReader())
-					{
-						while (Reader.Read())
-						{
-							idOfRoomsList.Add($"{Reader["RoomID"]}");
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department:{Reader["Department"]}");
-							countIndex++;
-						}
-					}
-				}
-			}
-			else
-			{
-				
-				if (GetChosenTags().Count == 0)
-				{
-					command = new SqlCommand("SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r, Tags t, TagAssign ta LEFT JOIN Bookings b ON b.RoomID = r.RoomID AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor;", sqlConnection);
-					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
-					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
-
-					using (SqlDataReader Reader = command.ExecuteReader())
-					{
-						while (Reader.Read())
-						{
-							idOfRoomsList.Add($"{Reader["RoomID"]}");
-							if ($"{Reader["TeacherInitials"]}" != "Null")
-							{
-								transferBookings.Add($"{Reader["RoomID"]}");
-								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["TeacherInitials"]}");
-							}
-							else
-							{
-								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
-							}
-							countIndex++;
-						}
-					}
-				}
-				else if (GetChosenTags().Count != 0)
-				{
-					command = new SqlCommand($"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.TeacherInitials FROM Rooms r, Tags t, TagAssign ta LEFT JOIN Bookings b ON b.RoomID = r.RoomID    AND b.DateOfBooking =  @dateBookingFor  AND b.BookedPeriod = @periodBookingFor WHERE (r.RoomID = b.RoomID AND (b.DateOfBooking != @dateBookingFor AND b.BookedPeriod != @periodBookingFor)) AND r.RoomID = ta.RoomID AND t.TagID = ta.TagID AND t.Tag IN ('{String.Join("','", GetChosenTags().ToArray())}') --ORDER BY RoomID", sqlConnection);
-					command.Parameters.AddWithValue("@dateBookingFor", (DateBox.SelectedIndex == -1 ? (DateTime.MaxValue) : DateTime.Now.Date.AddDays(DateBox.SelectedIndex)));
-					command.Parameters.AddWithValue("@periodBookingFor", (PeriodSelect.SelectedIndex == -1 ? 0 : PeriodSelect.SelectedItem));
-
-					using (SqlDataReader Reader = command.ExecuteReader())
-					{
-						while (Reader.Read())
-						{
-							idOfRoomsList.Add($"{Reader["RoomID"]}");
-							if ($"{Reader["TeacherInitials"]}" != "Null")
-							{
-								transferBookings.Add($"{Reader["RoomID"]}");
-								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["TeacherInitials"]}"); 
-							}
-							else
-							{
-								RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
-							}
-							countIndex++;
-						}
-					}
-				}
-			}
-
-
-
-			if (sqlConnection.State == ConnectionState.Open)
-			{
-				sqlConnection.Close();
-			}
-		}
-
-		*/
-
-		#region hope works
 
 		private void GetRooms_Click_1(object sender, EventArgs e)
 		{
@@ -443,8 +329,6 @@ namespace NEA_Room_Booking_Prototype
 				sqlConnection.Close();
 			}
 		}
-
-		#endregion
 
 
 
