@@ -216,6 +216,7 @@ namespace NEA_Room_Booking_Prototype
 		}
 
 
+		/*
 		// Get rooms button
 		private void GetRooms_Click_1(object sender, EventArgs e)
 		{
@@ -327,7 +328,123 @@ namespace NEA_Room_Booking_Prototype
 			}
 		}
 
+		*/
 
+		#region hope works
+
+		private void GetRooms_Click_1(object sender, EventArgs e)
+		{
+			if (sqlConnection.State != ConnectionState.Open)
+			{
+				sqlConnection.ConnectionString = CONNECT;
+				sqlConnection.Open();
+			}
+
+			RoomsList.Items.Clear();
+			idOfRoomsList = new List<string>();
+			transferBookings = new List<string>();
+			int countIndex = 0;
+
+			DateTime dateParam = (DateBox.SelectedIndex == -1) ? DateTime.MaxValue : DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
+			int periodParam;
+			if (PeriodSelect.SelectedIndex == -1 || !int.TryParse(Convert.ToString(PeriodSelect.SelectedItem), out periodParam))
+				periodParam = 0;
+
+			List<string> chosenTags = GetChosenTags();
+			SqlCommand command;
+
+			// Show only rooms NOT booked for date/period
+			if (ShowAlreadyBookedRooms.CheckState != CheckState.Checked)
+			{
+				if (chosenTags.Count == 0)
+				{
+					// No tags: return rooms that do NOT have a booking for the specified date/period
+					string sql = @"SELECT r.RoomID, r.Seats, r.Department FROM Rooms r WHERE NOT EXISTS (SELECT 1 FROM Bookings b WHERE b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor) ORDER BY r.RoomID;";
+					command = new SqlCommand(sql, sqlConnection);
+				}
+				else
+				{
+					// With tags: rooms that have at least one chosen tag and are NOT booked for the date/period
+					var tagParamNames = new List<string>();
+					for (int i = 0; i < chosenTags.Count; i++)
+					{
+						tagParamNames.Add("@tag" + i);
+					}
+					string listOfTagsIncmd = string.Join(",", tagParamNames);
+					string sql = $@"SELECT DISTINCT r.RoomID, r.Seats, r.Department FROM Rooms r INNER JOIN TagAssign ta ON ta.RoomID = r.RoomID INNER JOIN Tags t ON t.TagID = ta.TagID WHERE t.Tag IN ({listOfTagsIncmd}) AND NOT EXISTS ( SELECT 1 FROM Bookings b WHERE b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor) ORDER BY r.RoomID;";
+					command = new SqlCommand(sql, sqlConnection);
+					for (int i = 0; i < chosenTags.Count; i++)
+					{
+						command.Parameters.AddWithValue("@tag" + i, chosenTags[i]);
+					}
+				}
+
+				command.Parameters.AddWithValue("@dateBookingFor", dateParam);
+				command.Parameters.AddWithValue("@periodBookingFor", periodParam);
+
+				using (SqlDataReader Reader = command.ExecuteReader())
+				{
+					while (Reader.Read())
+					{
+						idOfRoomsList.Add($"{Reader["RoomID"]}");
+						RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department:{Reader["Department"]}");
+						countIndex++;
+					}
+				}
+			}
+			else // Show already-booked (show all rooms and booking info for the selected date/period)
+			{
+				if (chosenTags.Count == 0)
+				{
+					string sql = @"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor FROM Rooms r LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor ORDER BY r.RoomID;";
+					command = new SqlCommand(sql, sqlConnection);
+					command.Parameters.AddWithValue("@dateBookingFor", dateParam);
+					command.Parameters.AddWithValue("@periodBookingFor", periodParam);
+				}
+				else
+				{
+					var tagParamNames = new List<string>();
+					for (int i = 0; i < chosenTags.Count; i++)
+					{
+						tagParamNames.Add("@tag" + i);
+					}
+					string listOfTagsIncmd = string.Join(",", tagParamNames);
+					string sql = $@"SELECT DISTINCT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor FROM Rooms r INNER JOIN TagAssign ta ON ta.RoomID = r.RoomID INNER JOIN Tags t ON t.TagID = ta.TagID LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor WHERE t.Tag IN ({listOfTagsIncmd}) ORDER BY r.RoomID;";
+					command = new SqlCommand(sql, sqlConnection);
+					for (int i = 0; i < chosenTags.Count; i++)
+					{
+						command.Parameters.AddWithValue("@tag" + i, chosenTags[i]);
+					}
+					command.Parameters.AddWithValue("@dateBookingFor", dateParam);
+					command.Parameters.AddWithValue("@periodBookingFor", periodParam);
+				}
+
+				using (SqlDataReader Reader = command.ExecuteReader())
+				{
+					while (Reader.Read())
+					{
+						idOfRoomsList.Add($"{Reader["RoomID"]}");
+						if (Reader["BookedFor"] != DBNull.Value)
+						{
+							transferBookings.Add($"{Reader["RoomID"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["BookedFor"]}");
+						}
+						else
+						{
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+						}
+						countIndex++;
+					}
+				}
+			}
+
+			if (sqlConnection.State == ConnectionState.Open)
+			{
+				sqlConnection.Close();
+			}
+		}
+
+		#endregion
 
 
 
@@ -408,7 +525,18 @@ namespace NEA_Room_Booking_Prototype
 		{
 			if (RoomsList.SelectedIndex != -1)
 			{
-				ShowBookingbutton(true);
+				if (transferBookings.Contains(idOfRoomsList[RoomsList.SelectedIndex]))
+				{
+					booking = false;
+					Book_Room_Button.Text = "Request Transfer";
+					ShowBookingbutton(true);
+				}
+				else
+				{
+					booking = true;
+					Book_Room_Button.Text = "Book Room";
+					ShowBookingbutton(true);
+				}
 			}
 			else
 			{
