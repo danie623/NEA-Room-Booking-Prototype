@@ -27,6 +27,7 @@ namespace NEA_Room_Booking_Prototype
 		String currentUser = null;
 		List<String> idOfRoomsList;
 		List<String> transferBookings;
+		Dictionary<string, int> bookingIDs;
 		bool booking = true;
 
 		public BookingScreen()
@@ -229,6 +230,7 @@ namespace NEA_Room_Booking_Prototype
 			RoomsList.Items.Clear();
 			idOfRoomsList = new List<String>();
 			transferBookings = new List<String>();
+			bookingIDs = new Dictionary<string, int>();
 			int countIndex = 0;
 
 			DateTime dateParam = (DateBox.SelectedIndex == -1) ? DateTime.MaxValue : DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
@@ -282,7 +284,7 @@ namespace NEA_Room_Booking_Prototype
 			{
 				if (chosenTags.Count == 0)
 				{
-					String sql = @"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor FROM Rooms r LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor ORDER BY r.RoomID;";
+					String sql = @"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor, b.BookingID FROM Rooms r LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor ORDER BY r.RoomID;";
 					command = new SqlCommand(sql, sqlConnection);
 					command.Parameters.AddWithValue("@dateBookingFor", dateParam);
 					command.Parameters.AddWithValue("@periodBookingFor", periodParam);
@@ -295,7 +297,7 @@ namespace NEA_Room_Booking_Prototype
 						tagParamNames.Add("@tag" + i);
 					}
 					String listOfTagsIncmd = String.Join(",", tagParamNames);
-					String sql = $@"SELECT DISTINCT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor FROM Rooms r INNER JOIN TagAssign ta ON ta.RoomID = r.RoomID INNER JOIN Tags t ON t.TagID = ta.TagID LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor WHERE t.Tag IN ({listOfTagsIncmd}) ORDER BY r.RoomID;";
+					String sql = $@"SELECT DISTINCT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor, b.BookingID FROM Rooms r INNER JOIN TagAssign ta ON ta.RoomID = r.RoomID INNER JOIN Tags t ON t.TagID = ta.TagID LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor WHERE t.Tag IN ({listOfTagsIncmd}) ORDER BY r.RoomID;";
 					command = new SqlCommand(sql, sqlConnection);
 					for (int i = 0; i < chosenTags.Count; i++)
 					{
@@ -310,14 +312,15 @@ namespace NEA_Room_Booking_Prototype
 					while (Reader.Read())
 					{
 						idOfRoomsList.Add($"{Reader["RoomID"]}");
+						bookingIDs.Add($"{Reader["RoomID"]}", (Reader["BookingID"] != DBNull.Value) ? int.Parse($"{Reader["BookingID"]}") : -1);
 						if (Reader["BookedFor"] != DBNull.Value)
 						{
 							transferBookings.Add($"{Reader["RoomID"]}");
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["BookedFor"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["BookedFor"]}");
 						}
 						else
 						{
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\nCapacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
 						}
 						countIndex++;
 					}
@@ -335,19 +338,7 @@ namespace NEA_Room_Booking_Prototype
 		// Book room button
 		private void Book_Room_Button_Click(object sender, EventArgs e)
 		{
-			Booking_Confirm popup = new Booking_Confirm();
-
-			String selectedRoom = idOfRoomsList[RoomsList.SelectedIndex];
-			int selectedPeriod = int.Parse($"{PeriodSelect.SelectedItem}");
-			DateTime selectedDate =  DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
-			String teacherBoooking = currentUser;
-			String teacherBookedFor = ((teacherBookingFor.SelectedIndex != 0) ? $"{teacherBookingFor.SelectedItem}" : currentUser);
-      
-            popup.showMessage(selectedRoom, selectedPeriod, selectedDate, teacherBookedFor);
-			
-
-
-			if (popup.ShowDialog() == DialogResult.OK)
+			if (!booking)
 			{
 				if (sqlConnection.State != ConnectionState.Open)
 				{
@@ -355,34 +346,106 @@ namespace NEA_Room_Booking_Prototype
 					sqlConnection.Open();
 				}
 
-				
-
-                SqlCommand command = new SqlCommand("INSERT INTO Bookings (BookingID, TeacherInitials, RoomID, DateOfBooking, BookedPeriod, BookedFor) VALUES ( (SELECT ISNULL(MAX(BookingID) + 1, 0) FROM Bookings) , @initials, @RoomID, @Date , @period, @bookedFor)");
-
-				command.Parameters.AddWithValue("@initials", teacherBoooking);
-				command.Parameters.AddWithValue("@RoomID", selectedRoom);
-				command.Parameters.AddWithValue("@Date", selectedDate.Date);
-				command.Parameters.AddWithValue("@period", selectedPeriod);
-				command.Parameters.AddWithValue("@bookedFor", teacherBookedFor);
-
-
-                using (var connection1 = sqlConnection)
-				using (var cmd = new SqlDataAdapter())
-				using (command)
+				if (bookingIDs.ContainsKey(idOfRoomsList[RoomsList.SelectedIndex]))
 				{
-					command.Connection = connection1;
-					cmd.InsertCommand = command;
+					int existingBookingID = bookingIDs[idOfRoomsList[RoomsList.SelectedIndex]];
+					bool alreadyRequested = false;
 
 
-					int rowsAffected = command.ExecuteNonQuery();
+					SqlCommand command = new SqlCommand("SELECT * FROM TransferRequests WHERE BookingID = @idOfBooking AND MadeRequest = @user", sqlConnection);
+					command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
+					command.Parameters.AddWithValue("@user", currentUser);
 
-					if (rowsAffected > 0)
+					using (SqlDataReader reader = command.ExecuteReader())
 					{
-						MessageBox.Show("Booking saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+						if (reader.Read())
+						{
+							alreadyRequested = true;
+							MessageBox.Show("You have already made a transfer request for this booking.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						}
 					}
-					else
+
+
+					if (existingBookingID != -1 && !alreadyRequested)
 					{
-						MessageBox.Show("Booking was not saved.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						command = new SqlCommand("INSERT INTO TransferRequests (BookingID, MadeRequest) VALUES ( @idOfBooking, @madeBy );");
+						command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
+						command.Parameters.AddWithValue("@madeBy", currentUser);
+
+						using (var connection1 = sqlConnection)
+						using (var cmd = new SqlDataAdapter())
+						using (command)
+						{
+							command.Connection = connection1;
+							cmd.InsertCommand = command;
+
+
+							int rowsAffected = command.ExecuteNonQuery();
+
+							if (rowsAffected > 0)
+							{
+								MessageBox.Show("Transfer request made.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+							}
+							else
+							{
+								MessageBox.Show("Error. Transfer request was not made.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+							}
+						}
+					}
+				}
+				if (sqlConnection.State == ConnectionState.Open)
+				{
+					sqlConnection.Close();
+				}
+			}
+			else
+			{
+				if (sqlConnection.State != ConnectionState.Open)
+				{
+					sqlConnection.ConnectionString = CONNECT;
+					sqlConnection.Open();
+				}
+				Booking_Confirm popup = new Booking_Confirm();
+
+				String selectedRoom = idOfRoomsList[RoomsList.SelectedIndex];
+				int selectedPeriod = int.Parse($"{PeriodSelect.SelectedItem}");
+				DateTime selectedDate =  DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
+				String teacherBoooking = currentUser;
+				String teacherBookedFor = ((teacherBookingFor.SelectedIndex != 0) ? $"{teacherBookingFor.SelectedItem}" : currentUser);
+      
+				popup.showMessage(selectedRoom, selectedPeriod, selectedDate, teacherBookedFor);
+			
+
+
+				if (popup.ShowDialog() == DialogResult.OK)
+				{ 	
+					SqlCommand command = new SqlCommand("INSERT INTO Bookings (BookingID, TeacherInitials, RoomID, DateOfBooking, BookedPeriod, BookedFor) VALUES ( (SELECT ISNULL(MAX(BookingID) + 1, 0) FROM Bookings) , @initials, @RoomID, @Date , @period, @bookedFor)");
+
+					command.Parameters.AddWithValue("@initials", teacherBoooking);
+					command.Parameters.AddWithValue("@RoomID", selectedRoom);
+					command.Parameters.AddWithValue("@Date", selectedDate.Date);
+					command.Parameters.AddWithValue("@period", selectedPeriod);
+					command.Parameters.AddWithValue("@bookedFor", teacherBookedFor);
+
+
+					using (var connection1 = sqlConnection)
+					using (var cmd = new SqlDataAdapter())
+					using (command)
+					{
+						command.Connection = connection1;
+						cmd.InsertCommand = command;
+
+
+						int rowsAffected = command.ExecuteNonQuery();
+
+						if (rowsAffected > 0)
+						{
+							MessageBox.Show("Booking saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+						}
+						else
+						{
+							MessageBox.Show("Booking was not saved.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						}
 					}
 				}
 				if (sqlConnection.State == ConnectionState.Open)
@@ -462,6 +525,11 @@ namespace NEA_Room_Booking_Prototype
 		private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.KeyCode == Keys.Enter) { Login.PerformClick(); }
+		}
+
+		private void tagslist_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			GetRooms.PerformClick();
 		}
 
 		private void InitialsBox_KeyDown(object sender, KeyEventArgs e)
