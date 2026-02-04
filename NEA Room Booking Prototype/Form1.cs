@@ -20,7 +20,12 @@ namespace NEA_Room_Booking_Prototype
 	{
 		// Database connection setup
 		SqlConnection sqlConnection;
-		private const String CONNECT = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"M:\\Visual Studio 2022\\projects\\New NEA\\NEA Room Booking\\NEA Room Booking\\resourses\\RoomBookingDatabase.mdf\";Integrated Security = True; Connect Timeout = 30;";
+		
+		//college connection string
+		//private const String CONNECT = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"M:\\Visual Studio 2022\\projects\\New NEA\\NEA Room Booking\\NEA Room Booking\\resourses\\RoomBookingDatabase.mdf\";Integrated Security = True; Connect Timeout = 30;";
+
+		//home connection string
+		private const String CONNECT = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"C:\\Users\\danie\\source\\repos\\danie623\\NEA-Room-Booking-Prototype\\NEA Room Booking Prototype\\Database\\RoomBookingDatabase.mdf\";Integrated Security=True;Connect Timeout=30";
 
 		//variable initialisation for use in multiple functions
 		bool loggedIn = false;
@@ -42,6 +47,10 @@ namespace NEA_Room_Booking_Prototype
 		}
 
 
+		public static string getconnectionstring()
+		{
+			return CONNECT;
+		}
 
 		// Add dates to date selection box function
 		private void Adddates()

@@ -14,7 +14,7 @@ namespace NEA_Room_Booking_Prototype
 	public partial class TransferBookingScreen : Form
 	{
 		SqlConnection sqlConnection3;
-		private const string CONNECT = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"M:\\Visual Studio 2022\\projects\\New NEA\\NEA Room Booking\\NEA Room Booking\\resourses\\RoomBookingDatabase.mdf\";Integrated Security = True; Connect Timeout = 30;";
+		string CONNECT;
 
 		string bookingID_to_transfer;
 		string CurrentUser;
@@ -24,6 +24,7 @@ namespace NEA_Room_Booking_Prototype
 		public TransferBookingScreen()
 		{
 			InitializeComponent();
+			CONNECT = BookingScreen.getconnectionstring();
 			sqlConnection3 = new SqlConnection(CONNECT);
 		}
 

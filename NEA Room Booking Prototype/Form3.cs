@@ -15,7 +15,7 @@ namespace NEA_Room_Booking_Prototype
 	public partial class View_Bookings : Form
 	{
 		SqlConnection sqlConnection2;
-		private const string CONNECT = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"M:\\Visual Studio 2022\\projects\\New NEA\\NEA Room Booking\\NEA Room Booking\\resourses\\RoomBookingDatabase.mdf\";Integrated Security = True; Connect Timeout = 30;";
+		string CONNECT;
 
 		string currentUser;
 		List<String> bookingIDs;
@@ -24,6 +24,7 @@ namespace NEA_Room_Booking_Prototype
         public View_Bookings()
 		{
 			InitializeComponent();
+			CONNECT = BookingScreen.getconnectionstring();
 			sqlConnection2 = new SqlConnection(CONNECT);
             selectedBookingID = null;
             showBookingButtons(false);
@@ -72,15 +73,15 @@ namespace NEA_Room_Booking_Prototype
 						dateOfBooking = (DateTime)reader["DateOfBooking"];
 						if (whoBooked == currentUser.ToUpper() && bookedFor == currentUser.ToUpper())
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]}");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0,7)} period: {reader["BookedPeriod"]}");
 						}
 						else if (whoBooked == currentUser.ToUpper() && bookedFor != currentUser.ToUpper())
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]} \nBooked for {bookedFor} by you.");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]} \nBooked for {bookedFor} by you.");
 						}
 						else
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
 						}
 					}
 				}
@@ -100,11 +101,11 @@ namespace NEA_Room_Booking_Prototype
 						dateOfBooking = (DateTime)reader["DateOfBooking"];
 						if (whoBooked == currentUser.ToUpper())
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]}");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]}");
 						}
 						else
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.Day} {($"{dateOfBooking}").Substring(0, 10)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
 						}
 					}
 				}
