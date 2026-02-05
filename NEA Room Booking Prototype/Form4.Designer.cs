@@ -91,7 +91,7 @@
 			this.Controls.Add(this.TeacherList);
 			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "TransferBookingScreen";
-			this.Text = "Form4";
+			this.Text = "Transfer Booking";
 			this.Load += new System.EventHandler(this.TransferBookingScreen_Load);
 			this.ResumeLayout(false);
 

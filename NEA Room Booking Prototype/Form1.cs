@@ -29,7 +29,7 @@ namespace NEA_Room_Booking_Prototype
 
 		//variable initialisation for use in multiple functions
 		bool loggedIn = false;
-		String currentUser = null;
+		static String currentUser = null;
 		List<String> idOfRoomsList;
 		List<String> transferBookings;
 		Dictionary<string, int> bookingIDs;
@@ -50,6 +50,11 @@ namespace NEA_Room_Booking_Prototype
 		public static string getconnectionstring()
 		{
 			return CONNECT;
+		}
+
+		public static String getcurrentuser()
+		{
+			return currentUser;
 		}
 
 		// Add dates to date selection box function
@@ -141,7 +146,9 @@ namespace NEA_Room_Booking_Prototype
 				ViewBookings.Visible = false;
                 Book_Room_Button.Enabled = false;
                 Book_Room_Button.Visible = false;
-                loggedIn = false;
+				TransferRequests.Enabled = false;
+				TransferRequests.Visible = false;
+				loggedIn = false;
 				ShowBookingbutton(false);
 				LogInStatus.Text = "You are not logged in. \nYou need to log in to book a room.";
 			}
@@ -193,6 +200,8 @@ namespace NEA_Room_Booking_Prototype
 							PasswordLabel.Enabled = false;
 							ViewBookings.Enabled = true;
 							ViewBookings.Visible = true;
+							TransferRequests.Enabled = true;
+							TransferRequests.Visible = true;
 							LogInStatus.Text = "Welcome " + currentUser.ToUpper();
 							RoomsList_SelectedIndexChanged(sender, EventArgs.Empty);
 						}
@@ -200,6 +209,7 @@ namespace NEA_Room_Booking_Prototype
 						{
 							loggedIn = false;
 							currentUser = null;
+							PasswordBox.Text = "";
 							LogInStatus.Text = "Incorrect initials or password!";
 						}
                     }
@@ -475,6 +485,8 @@ namespace NEA_Room_Booking_Prototype
 
 		private void TransferRequests_Click(object sender, EventArgs e)
 		{
+			ViewTransferRequests popup = new ViewTransferRequests();
+			popup.Show();
 
 		}
 

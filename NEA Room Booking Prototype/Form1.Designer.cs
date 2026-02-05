@@ -305,7 +305,7 @@
 			this.MaximumSize = new System.Drawing.Size(1285, 705);
 			this.MinimumSize = new System.Drawing.Size(1285, 705);
 			this.Name = "BookingScreen";
-			this.Text = "Form1";
+			this.Text = "Book Room";
 			this.Load += new System.EventHandler(this.BookingScreen_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
