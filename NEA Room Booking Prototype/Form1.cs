@@ -67,7 +67,7 @@ namespace NEA_Room_Booking_Prototype
 				if (!((today.AddDays(i)).DayOfWeek == DayOfWeek.Sunday || (today.AddDays(i)).DayOfWeek == DayOfWeek.Saturday))
 				{
 					addedDays = Convert.ToString(today.AddDays(i));
-					DateBox.Items.Add($"{(today.AddDays(i)).DayOfWeek}, {addedDays.Substring(0,10)}");
+					DateBox.Items.Add($"{(today.AddDays(i)).DayOfWeek}, {addedDays.Substring(0,7)}");
 				}
 				
 			}
@@ -294,7 +294,7 @@ namespace NEA_Room_Booking_Prototype
 					while (Reader.Read())
 					{
 						idOfRoomsList.Add($"{Reader["RoomID"]}");
-						RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department:{Reader["Department"]}");
+						RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department: {Reader["Department"]}");
 						countIndex++;
 					}
 				}
@@ -335,11 +335,11 @@ namespace NEA_Room_Booking_Prototype
 						if (Reader["BookedFor"] != DBNull.Value)
 						{
 							transferBookings.Add($"{Reader["RoomID"]}");
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]} Currently Booked by: {Reader["BookedFor"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department: {Reader["Department"]} Currently Booked by: {Reader["BookedFor"]}");
 						}
 						else
 						{
-							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\nDepartment:{Reader["Department"]}");
+							RoomsList.Items.Add($"{idOfRoomsList[countIndex]}\n Capacity: {Reader["Seats"]}\n Department: {Reader["Department"]}");
 						}
 						countIndex++;
 					}
@@ -368,50 +368,87 @@ namespace NEA_Room_Booking_Prototype
 				if (bookingIDs.ContainsKey(idOfRoomsList[RoomsList.SelectedIndex]))
 				{
 					int existingBookingID = bookingIDs[idOfRoomsList[RoomsList.SelectedIndex]];
-					bool alreadyRequested = false;
 
 
-					SqlCommand command = new SqlCommand("SELECT * FROM TransferRequests WHERE BookingID = @idOfBooking AND MadeRequest = @user", sqlConnection);
-					command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
-					command.Parameters.AddWithValue("@user", currentUser);
-
-					using (SqlDataReader reader = command.ExecuteReader())
+					if (existingBookingID < 0)
 					{
-						if (reader.Read())
-						{
-							alreadyRequested = true;
-							MessageBox.Show("You have already made a transfer request for this booking.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-						}
+						MessageBox.Show("Error. This booking does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						return;
 					}
-
-
-					if (existingBookingID != -1 && !alreadyRequested)
+					else
 					{
-						command = new SqlCommand("INSERT INTO TransferRequests (BookingID, MadeRequest) VALUES ( @idOfBooking, @madeBy );");
+						bool alreadyRequested = false;
+
+
+						SqlCommand command = new SqlCommand("SELECT * FROM TransferRequests WHERE BookingID = @idOfBooking AND MadeRequest = @user", sqlConnection);
 						command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
-						command.Parameters.AddWithValue("@madeBy", currentUser);
+						command.Parameters.AddWithValue("@user", currentUser);
 
-						using (var connection1 = sqlConnection)
-						using (var cmd = new SqlDataAdapter())
-						using (command)
+						using (SqlDataReader reader = command.ExecuteReader())
 						{
-							command.Connection = connection1;
-							cmd.InsertCommand = command;
-
-
-							int rowsAffected = command.ExecuteNonQuery();
-
-							if (rowsAffected > 0)
+							if (reader.Read())
 							{
-								MessageBox.Show("Transfer request made.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+								alreadyRequested = true;
+								MessageBox.Show("You have already made a transfer request for this booking.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 							}
-							else
+						}
+
+						if (!alreadyRequested)
+						{
+							bool alreadyBookedForYou = false;
+
+							command = new SqlCommand("SELECT * FROM Bookings WHERE BookingID = @idOfBooking AND BookedFor = @user", sqlConnection);
+							command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
+							command.Parameters.AddWithValue("@user", currentUser);
+
+							using (SqlDataReader reader = command.ExecuteReader())
 							{
-								MessageBox.Show("Error. Transfer request was not made.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+								if (reader.Read())
+								{
+									alreadyBookedForYou = true;
+									MessageBox.Show("This booking is already yours", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+								}
+							}
+
+							if (!alreadyBookedForYou)
+							{
+								bool alreadyBookedByYou = false;
+
+								command = new SqlCommand("SELECT * FROM Bookings WHERE BookingID = @idOfBooking AND TeacherInitials = @user", sqlConnection);
+								command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
+								command.Parameters.AddWithValue("@user", currentUser);
+
+								using (SqlDataReader reader = command.ExecuteReader())
+								{
+									if (reader.Read())
+									{
+										alreadyBookedByYou = true;
+										MessageBox.Show("You made this booking. Transfer it back to yourself in the MyBookings menu.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+									}
+								}
+
+								if (!alreadyBookedByYou)
+								{
+									command = new SqlCommand("INSERT INTO TransferRequests (BookingID, MadeRequest) VALUES ( @idOfBooking, @madeBy );", sqlConnection);
+									command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
+									command.Parameters.AddWithValue("@madeBy", currentUser);
+
+									int rowsAffected = command.ExecuteNonQuery();
+
+									if (rowsAffected > 0)
+									{
+										MessageBox.Show("Transfer request made.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+									}
+									else
+									{
+										MessageBox.Show("Error. Transfer request was not made.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+									}
+								}
 							}
 						}
 					}
 				}
+
 				if (sqlConnection.State == ConnectionState.Open)
 				{
 					sqlConnection.Close();
@@ -471,6 +508,7 @@ namespace NEA_Room_Booking_Prototype
 				{
 					sqlConnection.Close();
 				}
+				GetRooms.PerformClick();
 			}
 		}
 

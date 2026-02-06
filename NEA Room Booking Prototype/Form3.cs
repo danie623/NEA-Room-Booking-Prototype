@@ -164,10 +164,34 @@ namespace NEA_Room_Booking_Prototype
 				sqlConnection2.Open();
             }
 
-            SqlCommand command = new SqlCommand("DELETE FROM Bookings WHERE bookingID = @bookingID;", sqlConnection2);
-			command.Parameters.AddWithValue("@bookingID", selectedBookingID);
+			SqlCommand checkForTransferRequestCommand = new SqlCommand("SELECT TOP 1 * FROM TransferRequests WHERE BookingID= @bookingID;", sqlConnection2);
+			checkForTransferRequestCommand.Parameters.AddWithValue("@bookingID", selectedBookingID);
 
-			if (command.ExecuteNonQuery() > 0)
+			SqlCommand command;
+
+			bool transferedInstead = false;
+
+			using (SqlDataReader reader = checkForTransferRequestCommand.ExecuteReader())
+			{
+				if (reader.Read())
+				{
+					command = new SqlCommand("UPDATE Bookings SET BookedFor = (SELECT TOP 1 MadeRequest FROM TransferRequests where BookingID= @bookingID ORDER BY RequestID ASC) WHERE BookingID = @bookingID;   DELETE FROM TransferRequests WHERE RequestID = (SELECT TOP 1 RequestID FROM TransferRequests where BookingID= @bookingID ORDER BY RequestID ASC);", sqlConnection2);
+					command.Parameters.AddWithValue("@bookingID", selectedBookingID);
+				}
+				else
+				{
+					command = new SqlCommand("DELETE FROM Bookings WHERE bookingID = @bookingID;", sqlConnection2);
+					command.Parameters.AddWithValue("@bookingID", selectedBookingID);
+				}
+			}
+
+			if (command.ExecuteNonQuery() > 0 && transferedInstead)
+			{
+				MessageBox.Show("There was an active transfer request for this booking so it was automatically transfered to the requester.");
+				BookingsList.Items.Clear();
+				Get_Bookings(currentUser);
+			}
+			else if (command.ExecuteNonQuery() > 0)
 			{
 				MessageBox.Show("Booking cancelled successfully.");
 				BookingsList.Items.Clear();
