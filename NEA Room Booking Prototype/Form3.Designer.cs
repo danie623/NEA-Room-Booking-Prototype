@@ -40,7 +40,7 @@
 			this.BookingsList.FormattingEnabled = true;
 			this.BookingsList.Location = new System.Drawing.Point(17, 49);
 			this.BookingsList.Name = "BookingsList";
-			this.BookingsList.Size = new System.Drawing.Size(347, 381);
+			this.BookingsList.Size = new System.Drawing.Size(480, 381);
 			this.BookingsList.TabIndex = 0;
 			this.BookingsList.SelectedIndexChanged += new System.EventHandler(this.BookingsList_SelectedIndexChanged);
 			// 

@@ -24,7 +24,7 @@ namespace NEA_Room_Booking_Prototype
 
 		public void showMessage(string roomID, int period, DateTime dateOfBooking, string teacherInitials)
 		{
-			Booking_msg.Text = $"Confirm booking for {roomID} \nperiod {period} on {dateOfBooking} \nfor {teacherInitials}";
+			Booking_msg.Text = $"Confirm booking for {roomID} \nperiod {period} on {dateOfBooking.DayOfWeek} {dateOfBooking.Date.ToString("dd/MM/yyyy")} \nfor {teacherInitials}";
 		}
 
 		private void QuitButton_Click(object sender, EventArgs e)

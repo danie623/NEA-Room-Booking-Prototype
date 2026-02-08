@@ -121,6 +121,7 @@ namespace NEA_Room_Booking_Prototype
 
 		private void Back_Click(object sender, EventArgs e)
 		{
+			DialogResult = DialogResult.Cancel;
 			this.Close();
 		}
 

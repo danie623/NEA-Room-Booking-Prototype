@@ -34,13 +34,14 @@ namespace NEA_Room_Booking_Prototype
 		List<String> transferBookings;
 		Dictionary<string, int> bookingIDs;
 		bool booking = true;
+		List<DateTime> listOfDates;
 
 		public BookingScreen()
 		{
 			InitializeComponent();
 			sqlConnection = new SqlConnection(CONNECT);
 			GetTags();
-			Adddates();
+			getDates();
 			this.Enabled = true;
 			GetRooms.PerformClick();
 
@@ -58,18 +59,32 @@ namespace NEA_Room_Booking_Prototype
 		}
 
 		// Add dates to date selection box function
-		private void Adddates()
+		
+		
+		private void getDates()
 		{
+			listOfDates = new List<DateTime>();
 			DateTime today = DateTime.Now;
-			String addedDays = null;
-			for ( int i = 0; i <= 10;  i++)
+			DateTime addedDays;
+			for (int i = 0; i <= 10; i++)
 			{
 				if (!((today.AddDays(i)).DayOfWeek == DayOfWeek.Sunday || (today.AddDays(i)).DayOfWeek == DayOfWeek.Saturday))
 				{
-					addedDays = Convert.ToString(today.AddDays(i));
-					DateBox.Items.Add($"{(today.AddDays(i)).DayOfWeek}, {addedDays.Substring(0,7)}");
+					addedDays = (today.AddDays(i));
+					listOfDates.Add(addedDays);
 				}
-				
+
+			}
+			AddDates();
+		}
+
+
+
+		private void AddDates()
+		{
+			foreach (DateTime date in listOfDates)
+			{
+				DateBox.Items.Add($"{date.DayOfWeek} {date.Date.ToString("dd/MM/yyyy")}");
 			}
 		}
 
@@ -252,7 +267,7 @@ namespace NEA_Room_Booking_Prototype
 			bookingIDs = new Dictionary<string, int>();
 			int countIndex = 0;
 
-			DateTime dateParam = (DateBox.SelectedIndex == -1) ? DateTime.MaxValue : DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
+			DateTime dateParam = (DateBox.SelectedIndex == -1) ? DateTime.MaxValue : listOfDates[DateBox.SelectedIndex].Date;
 			int periodParam;
 			if (PeriodSelect.SelectedIndex == -1 || !int.TryParse(Convert.ToString(PeriodSelect.SelectedItem), out periodParam))
 				periodParam = 0;
@@ -465,7 +480,7 @@ namespace NEA_Room_Booking_Prototype
 
 				String selectedRoom = idOfRoomsList[RoomsList.SelectedIndex];
 				int selectedPeriod = int.Parse($"{PeriodSelect.SelectedItem}");
-				DateTime selectedDate =  DateTime.Now.Date.AddDays(DateBox.SelectedIndex);
+				DateTime selectedDate = listOfDates[DateBox.SelectedIndex];
 				String teacherBoooking = currentUser;
 				String teacherBookedFor = ((teacherBookingFor.SelectedIndex != 0) ? $"{teacherBookingFor.SelectedItem}" : currentUser);
       
@@ -518,13 +533,19 @@ namespace NEA_Room_Booking_Prototype
 		{
 			View_Bookings popup = new View_Bookings();
 			popup.Get_Teacher(currentUser);
-			popup.Show();
+			if (popup.ShowDialog() == DialogResult.Cancel)
+			{
+				GetRooms.PerformClick();
+			}
 		}
 
 		private void TransferRequests_Click(object sender, EventArgs e)
 		{
 			ViewTransferRequests popup = new ViewTransferRequests();
-			popup.Show();
+			if (popup.ShowDialog() == DialogResult.Cancel)
+			{
+				GetRooms.PerformClick();
+			}
 
 		}
 

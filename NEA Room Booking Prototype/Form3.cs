@@ -59,9 +59,9 @@ namespace NEA_Room_Booking_Prototype
 			//get bookings for teacher
 			if (Bookings_For_others_check.Checked)
 			{ 
-                command = new SqlCommand("SELECT * FROM Bookings WHERE (TeacherInitials = @teacher OR BookedFor = @teacher) AND DateOfBooking > @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2);
+                command = new SqlCommand("SELECT * FROM Bookings WHERE (TeacherInitials = @teacher OR BookedFor = @teacher) AND DateOfBooking >= @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2);
 				command.Parameters.AddWithValue("@teacher", teacher);
-				command.Parameters.AddWithValue("@date", DateTime.Now.AddDays(-1));
+				command.Parameters.AddWithValue("@date", DateTime.Now.Date);
 				using (SqlDataReader reader = command.ExecuteReader())
 				{
 					while (reader.Read())
@@ -73,24 +73,24 @@ namespace NEA_Room_Booking_Prototype
 						dateOfBooking = (DateTime)reader["DateOfBooking"];
 						if (whoBooked == currentUser.ToUpper() && bookedFor == currentUser.ToUpper())
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0,7)} period: {reader["BookedPeriod"]}");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {dateOfBooking.Date.ToString("dd/MM/yyyy")} period: {reader["BookedPeriod"]}");
 						}
 						else if (whoBooked == currentUser.ToUpper() && bookedFor != currentUser.ToUpper())
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]} \nBooked for {bookedFor} by you.");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {dateOfBooking.Date.ToString("dd/MM/yyyy")} period: {reader["BookedPeriod"]} \nBooked for {bookedFor} by you.");
 						}
 						else
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {dateOfBooking.Date.ToString("dd/MM/yyyy")} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
 						}
 					}
 				}
 			}
 			else
 			{ 
-				command = new SqlCommand("SELECT * FROM Bookings WHERE BookedFor = @teacher AND DateOfBooking > @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2);
+				command = new SqlCommand("SELECT * FROM Bookings WHERE BookedFor = @teacher AND DateOfBooking >= @date ORDER BY DateOfBooking ASC, BookedPeriod ASC;", sqlConnection2);
 				command.Parameters.AddWithValue("@teacher", teacher);
-				command.Parameters.AddWithValue("@date", DateTime.Now.AddDays(-1));
+				command.Parameters.AddWithValue("@date", DateTime.Now.Date);
 				using (SqlDataReader reader = command.ExecuteReader())
 				{
 					while (reader.Read())
@@ -101,11 +101,11 @@ namespace NEA_Room_Booking_Prototype
 						dateOfBooking = (DateTime)reader["DateOfBooking"];
 						if (whoBooked == currentUser.ToUpper())
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]}");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {dateOfBooking.Date.ToString("dd/MM/yyyy")} period: {reader["BookedPeriod"]}");
 						}
 						else
 						{
-							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {($"{dateOfBooking.Date}").Substring(0, 7)} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
+							BookingsList.Items.Add($"{reader["RoomID"]} booked for {dateOfBooking.DayOfWeek} {dateOfBooking.Date.ToString("dd/MM/yyyy")} period: {reader["BookedPeriod"]} \nBooked for you by {whoBooked}.");
 						}
 					}
 				}
@@ -177,6 +177,7 @@ namespace NEA_Room_Booking_Prototype
 				{
 					command = new SqlCommand("UPDATE Bookings SET BookedFor = (SELECT TOP 1 MadeRequest FROM TransferRequests where BookingID= @bookingID ORDER BY RequestID ASC) WHERE BookingID = @bookingID;   DELETE FROM TransferRequests WHERE RequestID = (SELECT TOP 1 RequestID FROM TransferRequests where BookingID= @bookingID ORDER BY RequestID ASC);", sqlConnection2);
 					command.Parameters.AddWithValue("@bookingID", selectedBookingID);
+					transferedInstead = true;
 				}
 				else
 				{
@@ -185,13 +186,15 @@ namespace NEA_Room_Booking_Prototype
 				}
 			}
 
-			if (command.ExecuteNonQuery() > 0 && transferedInstead)
+			int rowsaffected = command.ExecuteNonQuery();
+
+			if (rowsaffected > 0 && transferedInstead)
 			{
 				MessageBox.Show("There was an active transfer request for this booking so it was automatically transfered to the requester.");
 				BookingsList.Items.Clear();
 				Get_Bookings(currentUser);
 			}
-			else if (command.ExecuteNonQuery() > 0)
+			else if (rowsaffected > 0)
 			{
 				MessageBox.Show("Booking cancelled successfully.");
 				BookingsList.Items.Clear();
