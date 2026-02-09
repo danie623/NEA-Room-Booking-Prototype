@@ -39,28 +39,30 @@ namespace NEA_Room_Booking_Prototype
 		public BookingScreen()
 		{
 			InitializeComponent();
+			//initialize connection to database
 			sqlConnection = new SqlConnection(CONNECT);
+			//gets tags and dates and inserts into appropriate selection boxes
 			GetTags();
 			getDates();
 			this.Enabled = true;
+			//adds rooms to the listbox on opening form
 			GetRooms.PerformClick();
 
 		}
 
-
+		// Get connection string function (for use in other forms)
 		public static string getconnectionstring()
 		{
 			return CONNECT;
 		}
 
+		// Get current user function (for use in other forms)
 		public static String getcurrentuser()
 		{
 			return currentUser;
 		}
 
 		// Add dates to date selection box function
-		
-		
 		private void getDates()
 		{
 			listOfDates = new List<DateTime>();
@@ -75,11 +77,12 @@ namespace NEA_Room_Booking_Prototype
 				}
 
 			}
+			//adds dates to the date selection box
 			AddDates();
 		}
 
 
-
+		// Add dates to date selection box function
 		private void AddDates()
 		{
 			foreach (DateTime date in listOfDates)
@@ -112,6 +115,8 @@ namespace NEA_Room_Booking_Prototype
 			}
 		}
 
+
+		// Get teachers and adds to 'booking for' selection box
 		private void getBookedForTeachers()
 		{
 			if (currentUser != null)
@@ -149,7 +154,7 @@ namespace NEA_Room_Booking_Prototype
 		// Login/Logout button
 		private void Login_Click(object sender, EventArgs e)
 		{
-
+			//if already logged in, logs out & hides buttons
 			if (loggedIn)
 			{
 				Login.Text = "Login";
@@ -168,7 +173,7 @@ namespace NEA_Room_Booking_Prototype
 				LogInStatus.Text = "You are not logged in. \nYou need to log in to book a room.";
 			}
 
-			else
+			else //if not logged in, checks credentials and if correct, logs in & shows buttons
 			{
                 Book_Room_Button.Enabled = false;
                 Book_Room_Button.Visible = false;
@@ -240,8 +245,7 @@ namespace NEA_Room_Booking_Prototype
 		}
 
 
-		// Get chosen tags function
-
+		// Get chosen tags for use in SQL query
 		private List<String> GetChosenTags()
 		{
 			List<String> tags = new List<String>();
@@ -253,6 +257,8 @@ namespace NEA_Room_Booking_Prototype
 			return tags;
 		}
 
+
+		// Get rooms button - shows rooms based on tags and whether to show already booked rooms -> shows booking info if showing already booked rooms
 		private void GetRooms_Click_1(object sender, EventArgs e)
 		{
 			if (sqlConnection.State != ConnectionState.Open)
@@ -278,13 +284,13 @@ namespace NEA_Room_Booking_Prototype
 			// Show only rooms NOT booked for date/period
 			if (ShowAlreadyBookedRooms.CheckState != CheckState.Checked)
 			{
-				if (chosenTags.Count == 0)
+				if (chosenTags.Count == 0) // If no tags are chosen, return all rooms that are not booked for the specified date/period
 				{
 					// No tags: return rooms that do NOT have a booking for the specified date/period
 					String sql = @"SELECT r.RoomID, r.Seats, r.Department FROM Rooms r WHERE NOT EXISTS (SELECT 1 FROM Bookings b WHERE b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor) ORDER BY r.RoomID;";
 					command = new SqlCommand(sql, sqlConnection);
 				}
-				else
+				else // If tags are chosen, return rooms that have at least one of the chosen tags and do NOT have a booking for the specified date/period
 				{
 					// With tags: rooms that have at least one chosen tag and are NOT booked for the date/period
 					var tagParamNames = new List<String>();
@@ -304,7 +310,7 @@ namespace NEA_Room_Booking_Prototype
 				command.Parameters.AddWithValue("@dateBookingFor", dateParam);
 				command.Parameters.AddWithValue("@periodBookingFor", periodParam);
 
-				using (SqlDataReader Reader = command.ExecuteReader())
+				using (SqlDataReader Reader = command.ExecuteReader()) // execute reader and add rooms to listbox (only rooms that are not booked for the date/period, so no booking info needed)
 				{
 					while (Reader.Read())
 					{
@@ -316,14 +322,14 @@ namespace NEA_Room_Booking_Prototype
 			}
 			else // Show already-booked (show all rooms and booking info for the selected date/period)
 			{
-				if (chosenTags.Count == 0)
+				if (chosenTags.Count == 0) // No tags: return all rooms with booking info for the specified date/period (if a room is not booked for the date/period, booking info will be null)
 				{
 					String sql = @"SELECT r.RoomID, r.Seats, r.Department, r.Available, b.BookedFor, b.BookingID FROM Rooms r LEFT JOIN Bookings b  ON b.RoomID = r.RoomID AND b.DateOfBooking = @dateBookingFor AND b.BookedPeriod = @periodBookingFor ORDER BY r.RoomID;";
 					command = new SqlCommand(sql, sqlConnection);
 					command.Parameters.AddWithValue("@dateBookingFor", dateParam);
 					command.Parameters.AddWithValue("@periodBookingFor", periodParam);
 				}
-				else
+				else // With tags: return rooms that have at least one chosen tag with booking info for the date/period (if a room is not booked for the date/period, booking info will be null)
 				{
 					var tagParamNames = new List<String>();
 					for (int i = 0; i < chosenTags.Count; i++)
@@ -341,7 +347,7 @@ namespace NEA_Room_Booking_Prototype
 					command.Parameters.AddWithValue("@periodBookingFor", periodParam);
 				}
 
-				using (SqlDataReader Reader = command.ExecuteReader())
+				using (SqlDataReader Reader = command.ExecuteReader()) // execute reader and add rooms to listbox with booking info (if a room is not booked for the date/period, booking info will be null so just show room info)
 				{
 					while (Reader.Read())
 					{
@@ -372,7 +378,7 @@ namespace NEA_Room_Booking_Prototype
 		// Book room button
 		private void Book_Room_Button_Click(object sender, EventArgs e)
 		{
-			if (!booking)
+			if (!booking) // if booking is false, it means the button is in "Request Transfer" mode, so make transfer request instead of booking the room
 			{
 				if (sqlConnection.State != ConnectionState.Open)
 				{
@@ -380,17 +386,17 @@ namespace NEA_Room_Booking_Prototype
 					sqlConnection.Open();
 				}
 
-				if (bookingIDs.ContainsKey(idOfRoomsList[RoomsList.SelectedIndex]))
+				if (bookingIDs.ContainsKey(idOfRoomsList[RoomsList.SelectedIndex])) // check if the selected room has a booking ID (it should if it's in the transferBookings list, but just to be safe before trying to access it)
 				{
 					int existingBookingID = bookingIDs[idOfRoomsList[RoomsList.SelectedIndex]];
 
 
-					if (existingBookingID < 0)
+					if (existingBookingID < 0) // if there is no valid booking ID for the selected room (shouldn't happen for rooms in the transferBookings list), show error message
 					{
 						MessageBox.Show("Error. This booking does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 						return;
 					}
-					else
+					else 
 					{
 						bool alreadyRequested = false;
 
@@ -399,7 +405,7 @@ namespace NEA_Room_Booking_Prototype
 						command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
 						command.Parameters.AddWithValue("@user", currentUser);
 
-						using (SqlDataReader reader = command.ExecuteReader())
+						using (SqlDataReader reader = command.ExecuteReader()) // check if the user has already made a transfer request for this booking
 						{
 							if (reader.Read())
 							{
@@ -408,7 +414,7 @@ namespace NEA_Room_Booking_Prototype
 							}
 						}
 
-						if (!alreadyRequested)
+						if (!alreadyRequested) // if the user has not already made a transfer request for this booking, check if the booking is already booked for them or made by them before allowing to make transfer request
 						{
 							bool alreadyBookedForYou = false;
 
@@ -425,7 +431,7 @@ namespace NEA_Room_Booking_Prototype
 								}
 							}
 
-							if (!alreadyBookedForYou)
+							if (!alreadyBookedForYou) // if the booking is not already booked for the user, check if the user made the booking before allowing to make transfer request (users should not be able to make transfer requests for their own bookings, they should just transfer it back to themselves in the My Bookings menu if they want to change it)
 							{
 								bool alreadyBookedByYou = false;
 
@@ -442,7 +448,7 @@ namespace NEA_Room_Booking_Prototype
 									}
 								}
 
-								if (!alreadyBookedByYou)
+								if (!alreadyBookedByYou) // if the user did not make the booking, make a transfer request for it
 								{
 									command = new SqlCommand("INSERT INTO TransferRequests (BookingID, MadeRequest) VALUES ( @idOfBooking, @madeBy );", sqlConnection);
 									command.Parameters.AddWithValue("@idOfBooking", existingBookingID);
@@ -450,7 +456,7 @@ namespace NEA_Room_Booking_Prototype
 
 									int rowsAffected = command.ExecuteNonQuery();
 
-									if (rowsAffected > 0)
+									if (rowsAffected > 0) // if the insert was successful, show success message, otherwise show error message
 									{
 										MessageBox.Show("Transfer request made.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 									}
@@ -469,13 +475,15 @@ namespace NEA_Room_Booking_Prototype
 					sqlConnection.Close();
 				}
 			}
-			else
+			else // if booking is true, it means the button is in "Book Room" mode, so proceed with normal booking process
 			{
 				if (sqlConnection.State != ConnectionState.Open)
 				{
 					sqlConnection.ConnectionString = CONNECT;
 					sqlConnection.Open();
 				}
+
+				// show booking confirmation popup and if user confirms, insert booking into database with the selected room/date/period and current user as the teacher who made the booking (and also the teacher booked for if "Myself" is selected in the "Booking for" selection box, otherwise use the selected teacher in the "Booking for" selection box as the teacher booked for)
 				Booking_Confirm popup = new Booking_Confirm();
 
 				String selectedRoom = idOfRoomsList[RoomsList.SelectedIndex];
@@ -488,7 +496,7 @@ namespace NEA_Room_Booking_Prototype
 			
 
 
-				if (popup.ShowDialog() == DialogResult.OK)
+				if (popup.ShowDialog() == DialogResult.OK) // if the user confirms the booking in the popup, insert the booking into the database
 				{ 	
 					SqlCommand command = new SqlCommand("INSERT INTO Bookings (BookingID, TeacherInitials, RoomID, DateOfBooking, BookedPeriod, BookedFor) VALUES ( (SELECT ISNULL(MAX(BookingID) + 1, 0) FROM Bookings) , @initials, @RoomID, @Date , @period, @bookedFor)");
 
@@ -509,7 +517,7 @@ namespace NEA_Room_Booking_Prototype
 
 						int rowsAffected = command.ExecuteNonQuery();
 
-						if (rowsAffected > 0)
+						if (rowsAffected > 0) // if the insert was successful, show success message, otherwise show error message
 						{
 							MessageBox.Show("Booking saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 						}
@@ -523,12 +531,14 @@ namespace NEA_Room_Booking_Prototype
 				{
 					sqlConnection.Close();
 				}
+
+				// refresh rooms list to show the newly booked room as booked
 				GetRooms.PerformClick();
 			}
 		}
 
 
-		
+		// View Bookings button - opens a new form to show the user's bookings
 		private void ViewBookings_Click(object sender, EventArgs e)
 		{
 			View_Bookings popup = new View_Bookings();
@@ -539,6 +549,7 @@ namespace NEA_Room_Booking_Prototype
 			}
 		}
 
+		// View Transfer Requests button - opens a new form to show the user's transfer requests
 		private void TransferRequests_Click(object sender, EventArgs e)
 		{
 			ViewTransferRequests popup = new ViewTransferRequests();
@@ -552,7 +563,7 @@ namespace NEA_Room_Booking_Prototype
 
 		#region show/hide buttons
 
-		// Room selection changed
+		// when a room is selected in the rooms list, check if it's already booked for the selected date/period (by checking if it's in the transferBookings list which is populated when showing already booked rooms) and if it is, change the book room button to a request transfer button, otherwise show the normal book room button. If no room is selected, hide the book room button.
 		private void RoomsList_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (RoomsList.SelectedIndex != -1)
@@ -600,7 +611,8 @@ namespace NEA_Room_Booking_Prototype
 		}
 		#endregion
 
-		// refreshes etc.
+		// refreshes
+		// QOL features such as allowing to press enter to log in and automatically refreshing the rooms list when changing the date/period/tags selection so the user doesn't have to manually click the Get Rooms button every time they change a selection criteria
 		#region key and button pushes
 		private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
 		{
