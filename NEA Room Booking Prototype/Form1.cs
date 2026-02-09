@@ -542,7 +542,7 @@ namespace NEA_Room_Booking_Prototype
 		private void ViewBookings_Click(object sender, EventArgs e)
 		{
 			View_Bookings popup = new View_Bookings();
-			popup.Get_Teacher(currentUser);
+			// when the user closes the View Bookings form and if they closed it by clicking the "Back" button (which sets the dialog result to Cancel), refresh the rooms list to update the booking info in case they made any changes to their bookings in the View Bookings form
 			if (popup.ShowDialog() == DialogResult.Cancel)
 			{
 				GetRooms.PerformClick();
