@@ -205,7 +205,7 @@ namespace NEA_Room_Booking_Prototype
 
 				using (SqlDataReader reader = command.ExecuteReader())
 				{
-					while (reader.Read())
+					if (reader.Read())
 					{
 						if (PasswordInput == $"{reader["Password"]}")
 						{
@@ -233,6 +233,13 @@ namespace NEA_Room_Booking_Prototype
 							LogInStatus.Text = "Incorrect initials or password!";
 						}
                     }
+					else
+					{
+						loggedIn = false;
+						currentUser = null;
+						PasswordBox.Text = "";
+						LogInStatus.Text = "Incorrect initials or password!";
+					}
 					
 				}
 				if (sqlConnection.State == ConnectionState.Open)
